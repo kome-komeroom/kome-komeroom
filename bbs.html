@@ -79,9 +79,13 @@
       <div class="echat-group" style="margin-bottom:14px;">
         <span class="g-label">みんなの投稿</span>
       </div>
+      <div class="list-toolbar">
+        <button class="sort-toggle" id="sortToggle">新しい順</button>
+      </div>
       <div class="bbs-gallery" id="gallery">
         <p class="echat-note">読み込み中…</p>
       </div>
+      <div class="pagination" id="pagination"></div>
     </div>
 
     <div class="back-wrap">
@@ -312,40 +316,107 @@
       }
     });
 
-    // ギャラリー表示（新着順・最大40件）
+    // ギャラリー表示（15件ずつページ送り・並び替え可）
     const gallery = document.getElementById('gallery');
+    const paginationEl = document.getElementById('pagination');
+    const sortToggle = document.getElementById('sortToggle');
+
+    const PAGE_SIZE = 15;
+    let bbsAllDocs = [];   // 新着順（desc）で保持
+    let bbsSortDesc = true;
+    let bbsCurrentPage = 1;
+
+    function renderPaginationControls(container, totalItems, currentPage, onChange) {
+      container.innerHTML = '';
+      const totalPages = Math.max(1, Math.ceil(totalItems / PAGE_SIZE));
+      if (totalPages <= 1) return;
+
+      const makeBtn = (label, page, opts = {}) => {
+        const btn = document.createElement('button');
+        btn.className = 'page-btn' + (opts.active ? ' active' : '');
+        btn.textContent = label;
+        if (opts.disabled) btn.disabled = true;
+        if (opts.dots) btn.classList.add('dots');
+        if (!opts.disabled && !opts.dots) {
+          btn.addEventListener('click', () => onChange(page));
+        }
+        return btn;
+      };
+
+      container.appendChild(makeBtn('‹', currentPage - 1, { disabled: currentPage === 1 }));
+
+      const pages = new Set([1, totalPages, currentPage, currentPage - 1, currentPage + 1]);
+      let prev = 0;
+      Array.from(pages).filter(p => p >= 1 && p <= totalPages).sort((a, b) => a - b).forEach(p => {
+        if (prev && p - prev > 1) {
+          container.appendChild(makeBtn('…', 0, { dots: true }));
+        }
+        container.appendChild(makeBtn(String(p), p, { active: p === currentPage }));
+        prev = p;
+      });
+
+      container.appendChild(makeBtn('›', currentPage + 1, { disabled: currentPage === totalPages }));
+    }
+
+    function renderBbsPage() {
+      const items = bbsSortDesc ? bbsAllDocs : [...bbsAllDocs].reverse();
+      const totalPages = Math.max(1, Math.ceil(items.length / PAGE_SIZE));
+      if (bbsCurrentPage > totalPages) bbsCurrentPage = totalPages;
+      if (bbsCurrentPage < 1) bbsCurrentPage = 1;
+
+      if (items.length === 0) {
+        gallery.innerHTML = '<p class="echat-note">まだ投稿がありません。最初の一枚を投稿してみてください。</p>';
+        paginationEl.innerHTML = '';
+        return;
+      }
+
+      const start = (bbsCurrentPage - 1) * PAGE_SIZE;
+      const pageItems = items.slice(start, start + PAGE_SIZE);
+
+      gallery.innerHTML = '';
+      pageItems.forEach((d) => {
+        const card = document.createElement('div');
+        card.className = 'bbs-card';
+        const img = document.createElement('img');
+        img.src = d.image;
+        img.alt = d.name || '投稿画像';
+        const meta = document.createElement('div');
+        meta.className = 'bbs-card-meta';
+        const nameEl = document.createElement('span');
+        nameEl.className = 'bbs-card-name';
+        nameEl.textContent = d.name || '名無し';
+        meta.appendChild(nameEl);
+        if (d.comment) {
+          const c = document.createElement('span');
+          c.className = 'bbs-card-comment';
+          c.textContent = d.comment;
+          meta.appendChild(c);
+        }
+        card.appendChild(img);
+        card.appendChild(meta);
+        gallery.appendChild(card);
+      });
+
+      renderPaginationControls(paginationEl, items.length, bbsCurrentPage, (page) => {
+        bbsCurrentPage = page;
+        renderBbsPage();
+        gallery.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+    }
+
+    sortToggle.addEventListener('click', () => {
+      bbsSortDesc = !bbsSortDesc;
+      sortToggle.textContent = bbsSortDesc ? '新しい順' : '古い順';
+      bbsCurrentPage = 1;
+      renderBbsPage();
+    });
+
     db.collection('bbs_posts')
       .orderBy('createdAt', 'desc')
-      .limit(40)
+      .limit(300)
       .onSnapshot((snapshot) => {
-        if (snapshot.empty) {
-          gallery.innerHTML = '<p class="echat-note">まだ投稿がありません。最初の一枚を投稿してみてください。</p>';
-          return;
-        }
-        gallery.innerHTML = '';
-        snapshot.forEach((doc) => {
-          const d = doc.data();
-          const card = document.createElement('div');
-          card.className = 'bbs-card';
-          const img = document.createElement('img');
-          img.src = d.image;
-          img.alt = d.name || '投稿画像';
-          const meta = document.createElement('div');
-          meta.className = 'bbs-card-meta';
-          const nameEl = document.createElement('span');
-          nameEl.className = 'bbs-card-name';
-          nameEl.textContent = d.name || '名無し';
-          meta.appendChild(nameEl);
-          if (d.comment) {
-            const c = document.createElement('span');
-            c.className = 'bbs-card-comment';
-            c.textContent = d.comment;
-            meta.appendChild(c);
-          }
-          card.appendChild(img);
-          card.appendChild(meta);
-          gallery.appendChild(card);
-        });
+        bbsAllDocs = snapshot.docs.map(doc => doc.data());
+        renderBbsPage();
       }, (err) => {
         console.error(err);
         gallery.innerHTML = '<p class="echat-note">読み込みに失敗しました。Firebaseの設定をご確認ください。</p>';
