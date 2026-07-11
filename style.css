@@ -1,0 +1,853 @@
+@import url('https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@500;700&family=Zen+Kaku+Gothic+New:wght@400;500&family=Cormorant+Garamond:ital@1&display=swap');
+
+:root {
+  --bg: #fff8dc;
+  --ink: #a0522d;
+  --ink-soft: #b87d5c;
+  --line: #d9b48f;
+  --card: #fffdf5;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background-color: var(--bg);
+  background-image:
+    radial-gradient(var(--line) 0.6px, transparent 0.6px);
+  background-size: 22px 22px;
+  color: var(--ink);
+  font-family: "Zen Kaku Gothic New", "Hiragino Kaku Gothic ProN", sans-serif;
+  line-height: 1.9;
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  padding: 48px 16px 80px;
+}
+
+.frame {
+  width: 100%;
+  max-width: 640px;
+}
+
+/* ---- header ---- */
+.site-header {
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+.site-header .eng {
+  font-family: "Cormorant Garamond", serif;
+  font-style: italic;
+  font-size: 13px;
+  letter-spacing: 0.3em;
+  color: var(--ink-soft);
+  display: block;
+  margin-bottom: 10px;
+}
+
+.site-header h1 {
+  font-family: "Shippori Mincho", serif;
+  font-weight: 700;
+  font-size: 34px;
+  letter-spacing: 0.12em;
+  margin: 0;
+}
+
+.site-header .title-logo {
+  display: block;
+  max-width: 320px;
+  width: 80%;
+  height: auto;
+  margin: 0 auto;
+}
+
+.site-header .mascot {
+  display: block;
+  width: 64px;
+  height: auto;
+  margin: 6px auto 0;
+  image-rendering: pixelated;
+}
+
+.site-header .divider {
+  margin: 18px auto 0;
+  width: 100%;
+  height: 1px;
+  background: repeating-linear-gradient(
+    90deg,
+    var(--line) 0 6px,
+    transparent 6px 12px
+  );
+}
+
+/* ---- nav card ---- */
+.rooms {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 14px;
+}
+
+.rooms li a {
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 2px;
+  padding: 18px 24px;
+  text-decoration: none;
+  color: var(--ink);
+  transition: transform 0.15s ease, background 0.15s ease, border-color 0.15s ease;
+}
+
+.rooms li a:hover,
+.rooms li a:focus-visible {
+  transform: translateX(4px);
+  background: #fffaf0;
+  border-color: var(--ink-soft);
+}
+
+.rooms .num {
+  font-family: "Cormorant Garamond", serif;
+  font-style: italic;
+  font-size: 14px;
+  color: var(--ink-soft);
+  min-width: 22px;
+}
+
+.rooms .label {
+  font-family: "Shippori Mincho", serif;
+  font-size: 19px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+}
+
+.rooms .sub {
+  margin-left: auto;
+  font-family: "Cormorant Garamond", serif;
+  font-style: italic;
+  font-size: 12px;
+  color: var(--ink-soft);
+}
+
+/* ---- room content (text pages) ---- */
+.room-body.content {
+  text-align: left;
+  padding: 36px 32px;
+}
+
+.room-body.content section + section {
+  margin-top: 34px;
+}
+
+.room-body.content h2 {
+  font-family: "Shippori Mincho", serif;
+  font-size: 15px;
+  letter-spacing: 0.14em;
+  color: var(--ink);
+  margin: 0 0 14px;
+  padding-bottom: 8px;
+  border-bottom: 1px dotted var(--line);
+}
+
+.room-body.content p {
+  margin: 0 0 12px;
+  font-size: 14px;
+}
+
+.room-body.content ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.room-body.content ul li {
+  font-size: 14px;
+  padding-left: 1.3em;
+  position: relative;
+  margin-bottom: 6px;
+}
+
+.room-body.content ul li::before {
+  content: "・";
+  position: absolute;
+  left: 0;
+  color: var(--ink-soft);
+}
+
+.room-body.content .notice-list li {
+  font-size: 12.5px;
+  color: var(--ink-soft);
+  line-height: 1.8;
+}
+
+.room-body.content .notice-list li::before {
+  content: "▽";
+  font-size: 10px;
+  top: 3px;
+}
+
+.room-body.content .small-note {
+  font-size: 12px;
+  color: var(--ink-soft);
+  margin-top: 10px;
+}
+
+/* ---- echat (drawing) ---- */
+.echat-wrap {
+  background: var(--card);
+  border: 1px solid var(--line);
+  padding: 20px;
+}
+
+.echat-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 14px;
+  padding-bottom: 14px;
+  border-bottom: 1px dotted var(--line);
+}
+
+.echat-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.echat-group .g-label {
+  font-family: "Shippori Mincho", serif;
+  font-size: 12px;
+  color: var(--ink-soft);
+  letter-spacing: 0.05em;
+}
+
+.swatches {
+  display: flex;
+  gap: 6px;
+}
+
+.swatch {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 1px solid var(--line);
+  cursor: pointer;
+  padding: 0;
+  box-shadow: none;
+}
+
+.swatch.active {
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
+}
+
+.echat-toolbar input[type="range"] {
+  accent-color: var(--ink);
+}
+
+.echat-toolbar input[type="color"] {
+  width: 26px;
+  height: 26px;
+  border: 1px solid var(--line);
+  padding: 0;
+  background: none;
+  cursor: pointer;
+}
+
+.echat-btn {
+  font-family: "Zen Kaku Gothic New", sans-serif;
+  font-size: 12px;
+  color: var(--ink);
+  background: var(--bg);
+  border: 1px solid var(--line);
+  padding: 6px 12px;
+  cursor: pointer;
+  letter-spacing: 0.05em;
+}
+
+.echat-btn:hover {
+  background: #fff2d9;
+  border-color: var(--ink-soft);
+}
+
+.echat-btn.primary {
+  background: var(--ink);
+  color: var(--bg);
+  border-color: var(--ink);
+}
+
+.echat-btn.primary:hover {
+  background: var(--ink-soft);
+}
+
+#echat-canvas {
+  display: block;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  background: #ffffff;
+  border: 1px solid var(--line);
+  touch-action: none;
+  cursor: crosshair;
+}
+
+.echat-note {
+  margin-top: 12px;
+  font-size: 12px;
+  color: var(--ink-soft);
+  text-align: center;
+}
+
+/* ---- password gate ---- */
+.gate {
+  background: var(--card);
+  border: 1px solid var(--line);
+  padding: 40px 30px;
+  text-align: center;
+}
+
+.gate .gate-label {
+  font-family: "Shippori Mincho", serif;
+  font-size: 15px;
+  letter-spacing: 0.1em;
+  margin-bottom: 18px;
+}
+
+.gate input[type="password"] {
+  font-family: "Zen Kaku Gothic New", sans-serif;
+  font-size: 14px;
+  letter-spacing: 0.2em;
+  text-align: center;
+  color: var(--ink);
+  background: var(--bg);
+  border: 1px solid var(--line);
+  padding: 10px 14px;
+  width: 160px;
+  margin-bottom: 14px;
+}
+
+.gate .gate-error {
+  font-size: 12px;
+  color: #b3261e;
+  min-height: 18px;
+  margin-bottom: 8px;
+}
+
+.gated-content {
+  display: none;
+}
+
+/* ---- room index (list of rooms, reuses .rooms styling) ---- */
+.rooms .lock {
+  margin-left: 6px;
+  font-size: 11px;
+  color: var(--ink-soft);
+}
+
+.rooms li {
+  display: flex;
+  flex-direction: column;
+}
+
+.lock-hint {
+  margin: 6px 4px 0;
+  font-size: 11.5px;
+  color: var(--ink-soft);
+  letter-spacing: 0.03em;
+}
+
+/* ---- work sections ---- */
+.work-section + .work-section {
+  margin-top: 36px;
+  padding-top: 30px;
+  border-top: 1px dotted var(--line);
+}
+
+.work-section h2 {
+  font-family: "Shippori Mincho", serif;
+  font-size: 17px;
+  letter-spacing: 0.1em;
+  margin: 0 0 4px;
+}
+
+.work-section .series-desc {
+  font-size: 13px;
+  color: var(--ink-soft);
+  margin: 0 0 18px;
+}
+
+.work-sub {
+  margin-top: 18px;
+}
+
+.work-sub h3 {
+  font-family: "Shippori Mincho", serif;
+  font-size: 13px;
+  color: var(--ink-soft);
+  letter-spacing: 0.08em;
+  margin: 0 0 10px;
+  padding-left: 10px;
+  border-left: 3px solid var(--line);
+}
+
+.work-empty {
+  font-size: 13px;
+  color: var(--ink-soft);
+  padding-left: 12px;
+}
+
+.work-item {
+  background: var(--bg);
+  border: 1px solid var(--line);
+  padding: 16px 18px;
+  margin-bottom: 12px;
+}
+
+.work-item .work-title-row {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.work-item .work-title {
+  font-family: "Shippori Mincho", serif;
+  font-size: 15px;
+  font-weight: 500;
+}
+
+.tag {
+  display: inline-block;
+  font-size: 10px;
+  letter-spacing: 0.05em;
+  padding: 2px 7px;
+  border: 1px solid var(--ink-soft);
+  color: var(--ink-soft);
+}
+
+.tag.r18 {
+  color: #b3261e;
+  border-color: #b3261e;
+}
+
+.work-item .caption {
+  font-size: 13px;
+  margin: 0;
+}
+
+.work-item .later-note {
+  font-size: 12px;
+  color: var(--ink-soft);
+  margin: 8px 0 0;
+}
+
+.work-item details {
+  margin-top: 12px;
+}
+
+.work-item summary {
+  cursor: pointer;
+  font-size: 12.5px;
+  color: var(--ink);
+  border-bottom: 1px dotted var(--ink-soft);
+  display: inline-block;
+  padding-bottom: 2px;
+}
+
+.work-item summary:hover {
+  color: var(--ink-soft);
+}
+
+.fic-body {
+  margin-top: 18px;
+  font-size: 14px;
+  line-height: 2.1;
+}
+
+.fic-body p {
+  margin: 0 0 1em;
+}
+
+/* ---- diary (external) ---- */
+.diary-card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  padding: 36px 28px;
+  text-align: center;
+}
+
+.diary-card p {
+  font-size: 13.5px;
+  margin: 0 0 20px;
+}
+
+.diary-link-btn {
+  display: inline-block;
+  font-family: "Shippori Mincho", serif;
+  font-size: 14px;
+  letter-spacing: 0.1em;
+  color: var(--bg);
+  background: var(--ink);
+  border: 1px solid var(--ink);
+  padding: 12px 30px;
+  text-decoration: none;
+}
+
+.diary-link-btn:hover {
+  background: var(--ink-soft);
+  border-color: var(--ink-soft);
+}
+
+/* ---- link page ---- */
+.link-card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  padding: 24px;
+  display: flex;
+  gap: 18px;
+  align-items: center;
+}
+
+.link-card img.banner {
+  width: 200px;
+  height: 40px;
+  flex-shrink: 0;
+  border: 1px solid var(--line);
+}
+
+.link-card .link-text h3 {
+  font-family: "Shippori Mincho", serif;
+  font-size: 15px;
+  margin: 0 0 8px;
+}
+
+.link-card .link-text p {
+  font-size: 13px;
+  margin: 0;
+  line-height: 1.9;
+}
+
+@media (max-width: 480px) {
+  .link-card {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+
+.bbs-gallery {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 12px;
+}
+
+.bbs-card {
+  border: 1px solid var(--line);
+  background: var(--bg);
+  overflow: hidden;
+}
+
+.bbs-card img {
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  object-fit: contain;
+  background: #ffffff;
+  display: block;
+}
+
+.bbs-card-meta {
+  padding: 8px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.bbs-card-name {
+  font-family: "Shippori Mincho", serif;
+  font-size: 12px;
+  color: var(--ink);
+}
+
+.bbs-card-comment {
+  font-size: 11px;
+  color: var(--ink-soft);
+}
+
+/* ---- diary (in-site) ---- */
+.diary-intro {
+  font-size: 13px;
+  text-align: center;
+  margin: 0 0 24px;
+}
+
+.diary-post-form {
+  border-bottom: 1px dotted var(--line);
+  padding-bottom: 22px;
+  margin-bottom: 26px;
+}
+
+.diary-post-form .row {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 10px;
+  flex-wrap: wrap;
+}
+
+.diary-post-form input[type="text"],
+.diary-post-form input[type="password"] {
+  font-family: "Zen Kaku Gothic New", sans-serif;
+  font-size: 13px;
+  color: var(--ink);
+  background: var(--bg);
+  border: 1px solid var(--line);
+  padding: 8px 10px;
+}
+
+.diary-post-form input[name="title"] {
+  flex: 1;
+  min-width: 140px;
+}
+
+.diary-post-form input[name="pass"] {
+  width: 120px;
+}
+
+.diary-post-form textarea {
+  width: 100%;
+  min-height: 90px;
+  font-family: "Zen Kaku Gothic New", sans-serif;
+  font-size: 13.5px;
+  line-height: 1.8;
+  color: var(--ink);
+  background: var(--bg);
+  border: 1px solid var(--line);
+  padding: 10px;
+  resize: vertical;
+  margin-bottom: 10px;
+}
+
+.diary-entries {
+  display: grid;
+  gap: 20px;
+}
+
+.diary-entry {
+  border-left: 3px solid var(--line);
+  padding-left: 16px;
+}
+
+.diary-entry .d-date {
+  font-family: "Cormorant Garamond", serif;
+  font-style: italic;
+  font-size: 12px;
+  color: var(--ink-soft);
+}
+
+.diary-entry .d-title {
+  font-family: "Shippori Mincho", serif;
+  font-size: 15px;
+  margin: 4px 0 8px;
+}
+
+.diary-entry .d-body {
+  font-size: 13.5px;
+  line-height: 1.9;
+  white-space: pre-wrap;
+}
+
+/* ---- room index cards (works list) ---- */
+.room-cards {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 12px;
+}
+
+.room-card {
+  display: block;
+  background: var(--card);
+  border: 1px solid var(--line);
+  padding: 16px 20px;
+  text-decoration: none;
+  color: var(--ink);
+  transition: transform 0.15s ease, border-color 0.15s ease;
+}
+
+.room-card:hover {
+  transform: translateX(4px);
+  border-color: var(--ink-soft);
+}
+
+.room-card-top {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.room-card .num {
+  font-family: "Cormorant Garamond", serif;
+  font-style: italic;
+  font-size: 13px;
+  color: var(--ink-soft);
+}
+
+.room-card .label {
+  font-family: "Shippori Mincho", serif;
+  font-size: 17px;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+}
+
+.lock-icon {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  color: var(--ink-soft);
+}
+
+.lock-icon svg {
+  width: 15px;
+  height: 15px;
+}
+
+.room-card .hint {
+  margin: 8px 0 0;
+  padding-left: 27px;
+  font-size: 11.5px;
+  font-style: italic;
+  color: var(--ink-soft);
+  letter-spacing: 0.02em;
+}
+
+/* ---- work list (per-room index of works) ---- */
+.work-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 12px;
+}
+
+.work-list .work-link {
+  display: block;
+  background: var(--bg);
+  border: 1px solid var(--line);
+  padding: 15px 18px;
+  text-decoration: none;
+  color: var(--ink);
+  transition: transform 0.15s ease, border-color 0.15s ease;
+}
+
+.work-list .work-link:hover {
+  transform: translateX(3px);
+  border-color: var(--ink-soft);
+}
+
+.work-list .work-title-row {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.work-list .work-title {
+  font-family: "Shippori Mincho", serif;
+  font-size: 15px;
+  font-weight: 500;
+}
+
+.work-list .caption {
+  font-size: 12.5px;
+  color: var(--ink-soft);
+  margin: 0;
+}
+
+/* ---- single work page ---- */
+.work-single .work-title-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.work-single .work-title {
+  font-family: "Shippori Mincho", serif;
+  font-size: 19px;
+}
+
+.work-single .caption {
+  font-size: 13.5px;
+  color: var(--ink-soft);
+  margin: 0 0 8px;
+}
+
+.work-single .series-tag {
+  font-size: 11.5px;
+  color: var(--ink-soft);
+}
+
+/* ---- footer ---- */
+.site-footer {
+  text-align: center;
+  margin-top: 56px;
+  font-size: 12px;
+  color: var(--ink-soft);
+  letter-spacing: 0.08em;
+}
+
+.site-footer .mark {
+  display: block;
+  margin-top: 6px;
+  font-family: "Cormorant Garamond", serif;
+  font-style: italic;
+}
+
+/* ---- room (sub) page ---- */
+.room-page .site-header h1 {
+  font-size: 26px;
+}
+
+.room-body {
+  background: var(--card);
+  border: 1px solid var(--line);
+  padding: 40px 30px;
+  min-height: 200px;
+  text-align: center;
+}
+
+.room-body .status {
+  font-family: "Shippori Mincho", serif;
+  font-size: 16px;
+  letter-spacing: 0.15em;
+  color: var(--ink-soft);
+}
+
+.back-link {
+  display: inline-block;
+  margin-top: 32px;
+  font-size: 13px;
+  color: var(--ink);
+  text-decoration: none;
+  border-bottom: 1px dotted var(--ink-soft);
+}
+
+.back-link:hover {
+  color: var(--ink-soft);
+}
+
+.back-wrap {
+  text-align: center;
+}

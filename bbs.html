@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>お絵描きBBS | よねまるの部屋</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="frame room-page">
+
+    <header class="site-header">
+      <span class="eng">drawing bbs</span>
+      <h1>お絵描きBBS</h1>
+      <div class="divider"></div>
+    </header>
+
+    <div class="room-body echat-wrap">
+
+      <div class="echat-toolbar">
+        <div class="echat-group">
+          <span class="g-label">いろ</span>
+          <div class="swatches" id="swatches">
+            <button class="swatch active" style="background:#a0522d" data-color="#a0522d" aria-label="シエナ"></button>
+            <button class="swatch" style="background:#2f2f2f" data-color="#2f2f2f" aria-label="くろ"></button>
+            <button class="swatch" style="background:#c9184a" data-color="#c9184a" aria-label="あか"></button>
+            <button class="swatch" style="background:#4a6c6f" data-color="#4a6c6f" aria-label="あお"></button>
+            <button class="swatch" style="background:#7a9d54" data-color="#7a9d54" aria-label="みどり"></button>
+            <button class="swatch" style="background:#e8ac41" data-color="#e8ac41" aria-label="きいろ"></button>
+          </div>
+          <input type="color" id="colorPicker" value="#a0522d" aria-label="色を選ぶ">
+        </div>
+
+        <div class="echat-group">
+          <span class="g-label">ふとさ</span>
+          <input type="range" id="sizeRange" min="1" max="30" value="4">
+        </div>
+
+        <div class="echat-group">
+          <button class="echat-btn" id="eraserBtn">消しゴム</button>
+          <button class="echat-btn" id="undoBtn">元に戻す</button>
+          <button class="echat-btn" id="clearBtn">全消し</button>
+        </div>
+
+        <div class="echat-group" style="margin-left:auto">
+          <button class="echat-btn" id="saveBtn">PNG保存</button>
+        </div>
+      </div>
+
+      <canvas id="echat-canvas" width="800" height="600"></canvas>
+      <p class="echat-note">マウス・指どちらでも描けます。描いた絵はそのまま下から投稿できます。</p>
+
+      <div class="echat-toolbar" style="margin-top:24px;">
+        <div class="echat-group">
+          <span class="g-label">画像をアップロード</span>
+          <input type="file" id="fileInput" accept="image/*">
+        </div>
+      </div>
+      <p class="echat-note" id="uploadPreviewNote" style="display:none;">↑この画像がキャンバスに読み込まれました。そのまま投稿できます。</p>
+
+      <div class="echat-toolbar" style="margin-top:24px;">
+        <div class="echat-group">
+          <span class="g-label">なまえ</span>
+          <input type="text" id="posterName" maxlength="12" placeholder="名無し">
+        </div>
+        <div class="echat-group" style="flex:1;min-width:160px;">
+          <span class="g-label">ひとこと</span>
+          <input type="text" id="posterComment" maxlength="40" placeholder="コメント(任意)" style="flex:1;">
+        </div>
+        <div class="echat-group">
+          <button class="echat-btn primary" id="postBtn">みんなに見せる</button>
+        </div>
+      </div>
+      <p class="echat-note" id="postStatus"></p>
+    </div>
+
+    <div class="room-body echat-wrap" style="margin-top:20px;">
+      <div class="echat-group" style="margin-bottom:14px;">
+        <span class="g-label">みんなの投稿</span>
+      </div>
+      <div class="bbs-gallery" id="gallery">
+        <p class="echat-note">読み込み中…</p>
+      </div>
+    </div>
+
+    <div class="back-wrap">
+      <a class="back-link" href="index.html">← トップへ戻る</a>
+    </div>
+
+    <footer class="site-footer">
+      <span class="mark">yonemaru's room</span>
+    </footer>
+
+  </div>
+
+  <!-- ▼▼▼ Firebase（下の3行はご自身のプロジェクトのものに差し替えてください） ▼▼▼ -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+  <script>
+    // ここをFirebaseコンソールで取得した自分の設定値に置き換えてください
+    const firebaseConfig = {
+      apiKey: "AIzaSyB4J-diiATTbRl6RF0yATq4VwCofkET1g4",
+      authDomain: "yonemaru-room.firebaseapp.com",
+      projectId: "yonemaru-room",
+      storageBucket: "yonemaru-room.firebasestorage.app",
+      messagingSenderId: "719471435345",
+      appId: "1:719471435345:web:e6c5a8bd93f236b8efa270"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+  </script>
+  <!-- ▲▲▲ ここまで ▲▲▲ -->
+
+  <script>
+    const canvas = document.getElementById('echat-canvas');
+    const ctx = canvas.getContext('2d');
+
+    function fillWhite() {
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+    }
+    fillWhite();
+
+    let drawing = false;
+    let lastX = 0, lastY = 0;
+    let currentColor = '#a0522d';
+    let currentSize = 4;
+    let isEraser = false;
+    const undoStack = [];
+    const MAX_UNDO = 20;
+
+    function pushUndo() {
+      undoStack.push(ctx.getImageData(0, 0, canvas.width, canvas.height));
+      if (undoStack.length > MAX_UNDO) undoStack.shift();
+    }
+
+    function getPos(e) {
+      const rect = canvas.getBoundingClientRect();
+      const scaleX = canvas.width / rect.width;
+      const scaleY = canvas.height / rect.height;
+      if (e.touches && e.touches.length > 0) {
+        return {
+          x: (e.touches[0].clientX - rect.left) * scaleX,
+          y: (e.touches[0].clientY - rect.top) * scaleY
+        };
+      }
+      return {
+        x: (e.clientX - rect.left) * scaleX,
+        y: (e.clientY - rect.top) * scaleY
+      };
+    }
+
+    function startDraw(e) {
+      e.preventDefault();
+      pushUndo();
+      drawing = true;
+      const pos = getPos(e);
+      lastX = pos.x;
+      lastY = pos.y;
+      ctx.beginPath();
+      ctx.arc(pos.x, pos.y, currentSize / 2, 0, Math.PI * 2);
+      ctx.fillStyle = isEraser ? '#ffffff' : currentColor;
+      ctx.fill();
+    }
+
+    function draw(e) {
+      if (!drawing) return;
+      e.preventDefault();
+      const pos = getPos(e);
+      ctx.beginPath();
+      ctx.moveTo(lastX, lastY);
+      ctx.lineTo(pos.x, pos.y);
+      ctx.strokeStyle = isEraser ? '#ffffff' : currentColor;
+      ctx.lineWidth = currentSize;
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+      ctx.stroke();
+      lastX = pos.x;
+      lastY = pos.y;
+    }
+
+    function endDraw() { drawing = false; }
+
+    canvas.addEventListener('mousedown', startDraw);
+    canvas.addEventListener('mousemove', draw);
+    window.addEventListener('mouseup', endDraw);
+    canvas.addEventListener('touchstart', startDraw, { passive: false });
+    canvas.addEventListener('touchmove', draw, { passive: false });
+    canvas.addEventListener('touchend', endDraw);
+
+    const swatches = document.querySelectorAll('.swatch');
+    swatches.forEach(sw => {
+      sw.addEventListener('click', () => {
+        swatches.forEach(s => s.classList.remove('active'));
+        sw.classList.add('active');
+        currentColor = sw.dataset.color;
+        isEraser = false;
+        eraserBtn.classList.remove('primary');
+        document.getElementById('colorPicker').value = currentColor;
+      });
+    });
+
+    document.getElementById('colorPicker').addEventListener('input', (e) => {
+      currentColor = e.target.value;
+      isEraser = false;
+      eraserBtn.classList.remove('primary');
+      swatches.forEach(s => s.classList.remove('active'));
+    });
+
+    document.getElementById('sizeRange').addEventListener('input', (e) => {
+      currentSize = parseInt(e.target.value, 10);
+    });
+
+    const eraserBtn = document.getElementById('eraserBtn');
+    eraserBtn.addEventListener('click', () => {
+      isEraser = !isEraser;
+      eraserBtn.classList.toggle('primary', isEraser);
+    });
+
+    document.getElementById('undoBtn').addEventListener('click', () => {
+      if (undoStack.length === 0) return;
+      const imgData = undoStack.pop();
+      ctx.putImageData(imgData, 0, 0);
+    });
+
+    document.getElementById('clearBtn').addEventListener('click', () => {
+      pushUndo();
+      fillWhite();
+    });
+
+    document.getElementById('saveBtn').addEventListener('click', () => {
+      const link = document.createElement('a');
+      const now = new Date();
+      const stamp = now.getFullYear().toString() +
+        String(now.getMonth() + 1).padStart(2, '0') +
+        String(now.getDate()).padStart(2, '0') + '_' +
+        String(now.getHours()).padStart(2, '0') +
+        String(now.getMinutes()).padStart(2, '0');
+      link.download = 'echat_' + stamp + '.png';
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+    });
+
+    // 画像アップロード → キャンバスへ読み込み
+    document.getElementById('fileInput').addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const img = new Image();
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        img.onload = () => {
+          pushUndo();
+          fillWhite();
+          // アスペクト比を保ってキャンバスに収める
+          const scale = Math.min(canvas.width / img.width, canvas.height / img.height);
+          const w = img.width * scale;
+          const h = img.height * scale;
+          const x = (canvas.width - w) / 2;
+          const y = (canvas.height - h) / 2;
+          ctx.drawImage(img, x, y, w, h);
+          document.getElementById('uploadPreviewNote').style.display = 'block';
+        };
+        img.src = ev.target.result;
+      };
+      reader.readAsDataURL(file);
+    });
+
+    // 投稿（キャンバスの中身を圧縮してFirestoreへ保存）
+    const postBtn = document.getElementById('postBtn');
+    const postStatus = document.getElementById('postStatus');
+
+    function compressCanvas(maxDim, quality) {
+      const scale = Math.min(1, maxDim / Math.max(canvas.width, canvas.height));
+      const outW = Math.round(canvas.width * scale);
+      const outH = Math.round(canvas.height * scale);
+      const off = document.createElement('canvas');
+      off.width = outW;
+      off.height = outH;
+      const octx = off.getContext('2d');
+      octx.drawImage(canvas, 0, 0, outW, outH);
+      return off.toDataURL('image/jpeg', quality);
+    }
+
+    postBtn.addEventListener('click', async () => {
+      postBtn.disabled = true;
+      postStatus.textContent = '投稿しています…';
+
+      // Firestoreの1ドキュメント上限(1MB)に収まるよう、小さめに圧縮
+      let dataUrl = compressCanvas(500, 0.7);
+      if (dataUrl.length > 700000) {
+        dataUrl = compressCanvas(360, 0.6);
+      }
+
+      const name = document.getElementById('posterName').value.trim() || '名無し';
+      const comment = document.getElementById('posterComment').value.trim();
+
+      try {
+        await db.collection('bbs_posts').add({
+          image: dataUrl,
+          name: name.slice(0, 12),
+          comment: comment.slice(0, 40),
+          createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+        postStatus.textContent = '投稿しました！';
+        document.getElementById('posterComment').value = '';
+      } catch (err) {
+        console.error(err);
+        postStatus.textContent = '投稿に失敗しました。Firebaseの設定をご確認ください。';
+      } finally {
+        postBtn.disabled = false;
+      }
+    });
+
+    // ギャラリー表示（新着順・最大40件）
+    const gallery = document.getElementById('gallery');
+    db.collection('bbs_posts')
+      .orderBy('createdAt', 'desc')
+      .limit(40)
+      .onSnapshot((snapshot) => {
+        if (snapshot.empty) {
+          gallery.innerHTML = '<p class="echat-note">まだ投稿がありません。最初の一枚を投稿してみてください。</p>';
+          return;
+        }
+        gallery.innerHTML = '';
+        snapshot.forEach((doc) => {
+          const d = doc.data();
+          const card = document.createElement('div');
+          card.className = 'bbs-card';
+          const img = document.createElement('img');
+          img.src = d.image;
+          img.alt = d.name || '投稿画像';
+          const meta = document.createElement('div');
+          meta.className = 'bbs-card-meta';
+          const nameEl = document.createElement('span');
+          nameEl.className = 'bbs-card-name';
+          nameEl.textContent = d.name || '名無し';
+          meta.appendChild(nameEl);
+          if (d.comment) {
+            const c = document.createElement('span');
+            c.className = 'bbs-card-comment';
+            c.textContent = d.comment;
+            meta.appendChild(c);
+          }
+          card.appendChild(img);
+          card.appendChild(meta);
+          gallery.appendChild(card);
+        });
+      }, (err) => {
+        console.error(err);
+        gallery.innerHTML = '<p class="echat-note">読み込みに失敗しました。Firebaseの設定をご確認ください。</p>';
+      });
+  </script>
+</body>
+</html>

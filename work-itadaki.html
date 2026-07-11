@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>いただきもの | よねまるの部屋</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="frame room-page">
+
+    <header class="site-header">
+      <span class="eng">gifts</span>
+      <h1>いただきもの</h1>
+      <div class="divider"></div>
+    </header>
+
+    <div class="room-body">
+
+      <div id="gate" class="gate">
+        <p class="gate-label">合言葉をどうぞ</p>
+        <div><input type="password" id="gate-input" autocomplete="off"></div>
+        <p class="gate-error" id="gate-error"></p>
+        <button class="echat-btn primary" id="gate-btn">入る</button>
+      </div>
+
+      <div id="gated-content" class="gated-content content">
+        <p class="work-empty">まだない</p>
+      </div>
+
+    </div>
+
+    <div class="back-wrap">
+      <a class="back-link" href="sakuhin.html">← 作品一覧へ戻る</a>
+    </div>
+
+    <footer class="site-footer">
+      <span class="mark">yonemaru's room</span>
+    </footer>
+
+  </div>
+
+  <script src="gate.js"></script>
+  <script>initGate("itadaki", "8010");</script>
+</body>
+</html>
