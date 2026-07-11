@@ -69,6 +69,18 @@
       </ul>
     </div>
 
+    <div class="room-body echat-wrap" style="margin-top:20px;">
+      <div class="echat-group" style="margin-bottom:10px;">
+        <span class="g-label">新着お知らせを出す(サイト主専用)</span>
+      </div>
+      <div class="echat-toolbar" style="margin-top:0;">
+        <input type="text" id="noticeText" maxlength="60" placeholder="例：「本の話」を追加しました" style="flex:1;min-width:180px;font-family:'Zen Kaku Gothic New',sans-serif;font-size:13px;color:var(--ink);background:var(--bg);border:1px solid var(--line);padding:8px 10px;">
+        <input type="password" id="noticePass" placeholder="合言葉" autocomplete="off" style="width:110px;font-family:'Zen Kaku Gothic New',sans-serif;font-size:13px;color:var(--ink);background:var(--bg);border:1px solid var(--line);padding:8px 10px;">
+        <button class="echat-btn primary" id="noticeBtn">お知らせを出す</button>
+      </div>
+      <p class="echat-note" id="noticeStatus"></p>
+    </div>
+
     <div class="back-wrap">
       <a class="back-link" href="index.html">← トップへ戻る</a>
     </div>
@@ -78,5 +90,54 @@
     </footer>
 
   </div>
+
+  <!-- ▼▼▼ Firebase(bbs.html・nikki.htmlと同じ設定値) ▼▼▼ -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyB4J-diiATTbRl6RF0yATq4VwCofkET1g4",
+      authDomain: "yonemaru-room.firebaseapp.com",
+      projectId: "yonemaru-room",
+      storageBucket: "yonemaru-room.firebasestorage.app",
+      messagingSenderId: "719471435345",
+      appId: "1:719471435345:web:e6c5a8bd93f236b8efa270"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+    const OWNER_PASSWORD = "0727";
+  </script>
+  <!-- ▲▲▲ ここまで ▲▲▲ -->
+
+  <script>
+    document.getElementById('noticeBtn').addEventListener('click', async () => {
+      const status = document.getElementById('noticeStatus');
+      const pass = document.getElementById('noticePass').value;
+      const text = document.getElementById('noticeText').value.trim();
+
+      if (pass !== OWNER_PASSWORD) {
+        status.textContent = '合言葉がちがいます。';
+        return;
+      }
+      if (!text) {
+        status.textContent = '内容を入れてください。';
+        return;
+      }
+
+      status.textContent = '投稿しています…';
+      try {
+        await db.collection('notices').add({
+          text: text.slice(0, 60),
+          createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+        document.getElementById('noticeText').value = '';
+        document.getElementById('noticePass').value = '';
+        status.textContent = 'お知らせを出しました。トップページに表示されます。';
+      } catch (err) {
+        console.error(err);
+        status.textContent = '失敗しました。Firebaseの設定をご確認ください。';
+      }
+    });
+  </script>
 </body>
 </html>

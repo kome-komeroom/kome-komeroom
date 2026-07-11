@@ -140,6 +140,10 @@ body {
 }
 
 /* ---- room content (text pages) ---- */
+.content {
+  text-align: left;
+}
+
 .room-body.content {
   text-align: left;
   padding: 36px 32px;
@@ -178,7 +182,7 @@ body {
 }
 
 .room-body.content ul li::before {
-  content: "・";
+  content: "\30FB";
   position: absolute;
   left: 0;
   color: var(--ink-soft);
@@ -191,7 +195,7 @@ body {
 }
 
 .room-body.content .notice-list li::before {
-  content: "▽";
+  content: "\25BD";
   font-size: 10px;
   top: 3px;
 }
@@ -867,6 +871,133 @@ body {
   border: none;
   background: none;
   cursor: default;
+}
+
+/* ---- info bar (今日は何の日 / 新着通知) ---- */
+.info-bar {
+  text-align: center;
+  margin: -6px 0 22px;
+}
+
+.info-bar .info-line {
+  margin: 4px 0;
+  font-size: 11.5px;
+  color: var(--ink-soft);
+  letter-spacing: 0.03em;
+}
+
+.info-bar .notice-line {
+  display: inline-block;
+  background: var(--card);
+  border: 1px solid var(--line);
+  padding: 4px 12px;
+  color: var(--ink);
+  font-size: 11.5px;
+}
+
+/* ---- haishin memo ---- */
+.memo-post-form {
+  border-bottom: 1px dotted var(--line);
+  padding-bottom: 22px;
+  margin-bottom: 26px;
+}
+
+.memo-post-form .row {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 10px;
+  flex-wrap: wrap;
+}
+
+.memo-post-form input[type="text"],
+.memo-post-form input[type="date"],
+.memo-post-form input[type="password"],
+.memo-post-form select,
+.memo-post-form textarea {
+  font-family: "Zen Kaku Gothic New", sans-serif;
+  font-size: 13px;
+  color: var(--ink);
+  background: var(--bg);
+  border: 1px solid var(--line);
+  padding: 8px 10px;
+}
+
+.memo-post-form input[name="url"] {
+  flex: 1;
+  min-width: 200px;
+}
+
+.memo-post-form textarea {
+  width: 100%;
+  min-height: 60px;
+  line-height: 1.8;
+  resize: vertical;
+  margin-bottom: 10px;
+}
+
+.memo-filter-bar {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+
+.memo-filter-bar select,
+.memo-filter-bar button {
+  font-family: "Zen Kaku Gothic New", sans-serif;
+  font-size: 12.5px;
+  color: var(--ink);
+  background: var(--bg);
+  border: 1px solid var(--line);
+  padding: 7px 10px;
+}
+
+.memo-list {
+  display: grid;
+  gap: 14px;
+}
+
+.memo-card {
+  background: var(--bg);
+  border: 1px solid var(--line);
+  padding: 15px 18px;
+}
+
+.memo-card .memo-top {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+}
+
+.memo-card .memo-date {
+  font-family: "Cormorant Garamond", serif;
+  font-style: italic;
+  font-size: 12px;
+  color: var(--ink-soft);
+}
+
+.memo-card .memo-cat {
+  font-size: 10.5px;
+  border: 1px solid var(--ink-soft);
+  color: var(--ink-soft);
+  padding: 1px 8px;
+}
+
+.memo-card a.memo-url {
+  display: block;
+  font-size: 13px;
+  color: var(--ink);
+  word-break: break-all;
+  margin-bottom: 6px;
+}
+
+.memo-card .memo-comment {
+  font-size: 13px;
+  line-height: 1.8;
+  white-space: pre-wrap;
 }
 
 /* ---- footer ---- */

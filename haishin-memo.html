@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>配信メモ | よねまるの部屋</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="frame room-page">
+
+    <header class="site-header">
+      <span class="eng">memo</span>
+      <h1>配信メモ</h1>
+      <div class="divider"></div>
+    </header>
+
+    <div class="room-body">
+
+      <div class="memo-post-form">
+        <p class="g-label" style="font-family:'Shippori Mincho',serif;font-size:12px;color:var(--ink-soft);margin-bottom:10px;">メモを書く(サイト主専用)</p>
+        <div class="row">
+          <input type="text" id="memoUrl" name="url" placeholder="YouTube・ニコニコ動画などのリンク">
+          <input type="date" id="memoDate" name="date">
+        </div>
+        <div class="row">
+          <select id="memoCategory">
+            <option value="シラクサ氏">シラクサ氏</option>
+            <option value="ペリカン">ペリカン</option>
+            <option value="グラちゃん">グラちゃん</option>
+            <option value="うんこちゃん関連">うんこちゃん関連</option>
+            <option value="音MAD">音MAD</option>
+            <option value="その他">その他</option>
+          </select>
+          <input type="password" id="memoPass" placeholder="合言葉" autocomplete="off">
+        </div>
+        <textarea id="memoComment" maxlength="500" placeholder="感想メモ"></textarea>
+        <div class="row" style="justify-content:space-between;align-items:center;">
+          <span class="echat-note" id="memoStatus" style="margin:0;"></span>
+          <button class="echat-btn primary" id="memoPostBtn">メモを残す</button>
+        </div>
+      </div>
+
+      <div class="memo-filter-bar">
+        <span class="g-label" style="font-family:'Shippori Mincho',serif;font-size:12px;color:var(--ink-soft);">絞り込み</span>
+        <select id="filterCategory">
+          <option value="">すべて</option>
+          <option value="シラクサ氏">シラクサ氏</option>
+          <option value="ペリカン">ペリカン</option>
+          <option value="グラちゃん">グラちゃん</option>
+          <option value="うんこちゃん関連">うんこちゃん関連</option>
+          <option value="音MAD">音MAD</option>
+          <option value="その他">その他</option>
+        </select>
+        <button id="sortToggleBtn">新しい順</button>
+      </div>
+
+      <div class="memo-list" id="memoList">
+        <p class="echat-note">読み込み中…</p>
+      </div>
+
+    </div>
+
+    <div class="back-wrap">
+      <a class="back-link" href="index.html">← トップへ戻る</a>
+    </div>
+
+    <footer class="site-footer">
+      <span class="mark">yonemaru's room</span>
+    </footer>
+
+  </div>
+
+  <!-- ▼▼▼ Firebase(他ページと同じ設定値) ▼▼▼ -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyB4J-diiATTbRl6RF0yATq4VwCofkET1g4",
+      authDomain: "yonemaru-room.firebaseapp.com",
+      projectId: "yonemaru-room",
+      storageBucket: "yonemaru-room.firebasestorage.app",
+      messagingSenderId: "719471435345",
+      appId: "1:719471435345:web:e6c5a8bd93f236b8efa270"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+    const OWNER_PASSWORD = "0727";
+  </script>
+  <!-- ▲▲▲ ここまで ▲▲▲ -->
+
+  <script>
+    // 投稿
+    document.getElementById('memoPostBtn').addEventListener('click', async () => {
+      const status = document.getElementById('memoStatus');
+      const pass = document.getElementById('memoPass').value;
+      const url = document.getElementById('memoUrl').value.trim();
+      const date = document.getElementById('memoDate').value;
+      const category = document.getElementById('memoCategory').value;
+      const comment = document.getElementById('memoComment').value.trim();
+
+      if (pass !== OWNER_PASSWORD) {
+        status.textContent = '合言葉がちがいます。';
+        return;
+      }
+      if (!url) {
+        status.textContent = 'リンクを入れてください。';
+        return;
+      }
+
+      status.textContent = '投稿しています…';
+      try {
+        await db.collection('haishin_memos').add({
+          url: url,
+          date: date || '',
+          category: category,
+          comment: comment.slice(0, 500),
+          createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+        document.getElementById('memoUrl').value = '';
+        document.getElementById('memoDate').value = '';
+        document.getElementById('memoComment').value = '';
+        document.getElementById('memoPass').value = '';
+        status.textContent = 'メモを残しました。';
+      } catch (err) {
+        console.error(err);
+        status.textContent = '失敗しました。Firebaseの設定をご確認ください。';
+      }
+    });
+
+    // 一覧表示・絞り込み・並び替え
+    let allMemos = [];
+    let sortDesc = true;
+
+    function render() {
+      const cat = document.getElementById('filterCategory').value;
+      const listEl = document.getElementById('memoList');
+
+      let items = cat ? allMemos.filter(m => m.category === cat) : allMemos.slice();
+      items.sort((a, b) => {
+        const da = a.date || '';
+        const db_ = b.date || '';
+        return sortDesc ? db_.localeCompare(da) : da.localeCompare(db_);
+      });
+
+      if (items.length === 0) {
+        listEl.innerHTML = '<p class="echat-note">まだメモがありません。</p>';
+        return;
+      }
+
+      listEl.innerHTML = '';
+      items.forEach((m) => {
+        const card = document.createElement('div');
+        card.className = 'memo-card';
+
+        const top = document.createElement('div');
+        top.className = 'memo-top';
+        const dateEl = document.createElement('span');
+        dateEl.className = 'memo-date';
+        dateEl.textContent = m.date || '(日付なし)';
+        const catEl = document.createElement('span');
+        catEl.className = 'memo-cat';
+        catEl.textContent = m.category || 'その他';
+        top.appendChild(dateEl);
+        top.appendChild(catEl);
+        card.appendChild(top);
+
+        const a = document.createElement('a');
+        a.className = 'memo-url';
+        a.href = m.url;
+        a.target = '_blank';
+        a.rel = 'noopener';
+        a.textContent = m.url;
+        card.appendChild(a);
+
+        if (m.comment) {
+          const c = document.createElement('div');
+          c.className = 'memo-comment';
+          c.textContent = m.comment;
+          card.appendChild(c);
+        }
+
+        listEl.appendChild(card);
+      });
+    }
+
+    document.getElementById('filterCategory').addEventListener('change', render);
+    document.getElementById('sortToggleBtn').addEventListener('click', () => {
+      sortDesc = !sortDesc;
+      document.getElementById('sortToggleBtn').textContent = sortDesc ? '新しい順' : '古い順';
+      render();
+    });
+
+    db.collection('haishin_memos')
+      .orderBy('createdAt', 'desc')
+      .limit(200)
+      .onSnapshot((snapshot) => {
+        allMemos = snapshot.docs.map(doc => doc.data());
+        render();
+      }, (err) => {
+        console.error(err);
+        document.getElementById('memoList').innerHTML = '<p class="echat-note">読み込みに失敗しました。Firebaseの設定をご確認ください。</p>';
+      });
+  </script>
+</body>
+</html>
