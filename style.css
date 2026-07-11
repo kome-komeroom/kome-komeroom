@@ -178,7 +178,7 @@ body {
 }
 
 .room-body.content ul li::before {
-  content: "繝ｻ";
+  content: "・";
   position: absolute;
   left: 0;
   color: var(--ink-soft);
@@ -191,7 +191,7 @@ body {
 }
 
 .room-body.content .notice-list li::before {
-  content: "笆ｽ";
+  content: "▽";
   font-size: 10px;
   top: 3px;
 }
