@@ -126,22 +126,19 @@ body {
   margin: 28px 0 8px;
 }
 
-.clap-stamp {
+.clap-link {
   display: inline-block;
-  width: 110px;
-  height: 110px;
-  transform: rotate(-6deg);
   transition: transform 0.15s ease;
 }
 
-.clap-stamp img {
-  width: 100%;
-  height: 100%;
+.clap-mascot-img {
+  width: 120px;
+  height: auto;
   display: block;
 }
 
-.clap-stamp:hover {
-  transform: rotate(-6deg) scale(1.08);
+.clap-link:hover {
+  transform: scale(1.08);
 }
 
 .clap-stamp-icon,
@@ -151,10 +148,10 @@ body {
 
 .clap-teaser-note {
   margin: 10px 0 0;
-  font-size: 11px;
-  color: var(--ink-soft);
-  font-style: italic;
-  font-family: "Cormorant Garamond", serif;
+  font-size: 13px;
+  color: var(--ink);
+  font-family: "Zen Kaku Gothic New", sans-serif;
+  letter-spacing: 0.05em;
 }
 
 .rooms .num {
