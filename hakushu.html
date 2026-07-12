@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>Web拍手 | よねまるの部屋</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="frame room-page">
+
+    <header class="site-header">
+      <span class="eng">web clap</span>
+      <h1>Web拍手</h1>
+      <div class="divider"></div>
+    </header>
+
+    <div class="room-body clap-box">
+      <p class="clap-count">これまでに <strong id="clapTotal">-</strong> 回、拍手をもらいました</p>
+
+      <button class="clap-button" id="clapBtn">👏 拍手する</button>
+
+      <div class="clap-message-box">
+        <textarea id="clapMessage" maxlength="500" placeholder="よかったら一言どうぞ(空欄でも拍手だけ送れます)"></textarea>
+        <p class="clap-note" id="clapStatus">メッセージはサイト主にだけ届きます。公開はされません。</p>
+      </div>
+    </div>
+
+    <div class="clap-replies" id="clapReplies">
+      <h2>サイト主からのお返事</h2>
+      <p class="echat-note">読み込み中…</p>
+    </div>
+
+    <div class="back-wrap">
+      <a class="back-link" href="index.html">← トップへ戻る</a>
+    </div>
+
+    <footer class="site-footer">
+      <span class="mark">yonemaru's room</span>
+    </footer>
+
+  </div>
+
+  <!-- ▼▼▼ Firebase(他ページと同じ設定値) ▼▼▼ -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyB4J-diiATTbRl6RF0yATq4VwCofkET1g4",
+      authDomain: "yonemaru-room.firebaseapp.com",
+      projectId: "yonemaru-room",
+      storageBucket: "yonemaru-room.firebasestorage.app",
+      messagingSenderId: "719471435345",
+      appId: "1:719471435345:web:e6c5a8bd93f236b8efa270"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+  </script>
+  <!-- ▲▲▲ ここまで ▲▲▲ -->
+
+  <script>
+    // 拍手カウンター(公開・誰でも閲覧可)
+    const statRef = db.collection('clap_stats').doc('count');
+    statRef.get().then((doc) => {
+      const total = doc.exists ? (doc.data().total || 0) : 0;
+      document.getElementById('clapTotal').textContent = total;
+    }).catch((err) => console.error(err));
+
+    document.getElementById('clapBtn').addEventListener('click', async () => {
+      const btn = document.getElementById('clapBtn');
+      const status = document.getElementById('clapStatus');
+      const message = document.getElementById('clapMessage').value.trim();
+      btn.disabled = true;
+
+      try {
+        // カウンターを更新
+        await statRef.set({
+          total: firebase.firestore.FieldValue.increment(1)
+        }, { merge: true });
+
+        // メッセージがあれば非公開の受信箱へ
+        if (message) {
+          await db.collection('clap_messages').add({
+            message: message.slice(0, 500),
+            replied: false,
+            createdAt: firebase.firestore.FieldValue.serverTimestamp()
+          });
+        }
+
+        const doc = await statRef.get();
+        document.getElementById('clapTotal').textContent = doc.data().total || 0;
+        document.getElementById('clapMessage').value = '';
+        status.textContent = message ? '拍手とメッセージを送りました。ありがとうございます！' : '拍手を送りました。ありがとうございます！';
+      } catch (err) {
+        console.error(err);
+        status.textContent = '送信に失敗しました。時間をおいてお試しください。';
+      } finally {
+        btn.disabled = false;
+      }
+    });
+
+    // 公開されているお返事一覧
+    db.collection('clap_replies')
+      .orderBy('createdAt', 'desc')
+      .limit(20)
+      .onSnapshot((snapshot) => {
+        const el = document.getElementById('clapReplies');
+        if (snapshot.empty) {
+          el.innerHTML = '<h2>サイト主からのお返事</h2><p class="echat-note">まだお返事はありません。</p>';
+          return;
+        }
+        let html = '<h2>サイト主からのお返事</h2>';
+        snapshot.forEach((doc) => {
+          const d = doc.data();
+          let dateStr = '';
+          if (d.createdAt && d.createdAt.toDate) {
+            const dt = d.createdAt.toDate();
+            dateStr = dt.getFullYear() + '.' + String(dt.getMonth()+1).padStart(2,'0') + '.' + String(dt.getDate()).padStart(2,'0');
+          }
+          html += '<div class="reply-entry"><span class="reply-date">' + dateStr + '</span>' + escapeHtml(d.reply) + '</div>';
+        });
+        el.innerHTML = html;
+      }, (err) => console.error(err));
+
+    function escapeHtml(str) {
+      const div = document.createElement('div');
+      div.textContent = str;
+      return div.innerHTML;
+    }
+  </script>
+</body>
+</html>
