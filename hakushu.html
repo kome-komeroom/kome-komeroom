@@ -17,7 +17,12 @@
     </header>
 
     <div class="room-body clap-box">
-      <p class="clap-count">これまでに <strong id="clapTotal">-</strong> 回、拍手をもらいました</p>
+      <p class="clap-intro">サイトの使い勝手や気になったところ、「こんな作品が見たい」というリクエストなど、なんでも送ってください。もちろん一言メッセージだけでも、拍手だけでも大歓迎です。</p>
+
+      <div class="clap-badge">
+        <span class="clap-badge-num" id="clapTotal">-</span>
+        <span class="clap-badge-label">CLAPS</span>
+      </div>
 
       <button class="clap-button" id="clapBtn">👏 拍手する</button>
 
@@ -29,6 +34,7 @@
 
     <div class="clap-replies" id="clapReplies">
       <h2>サイト主からのお返事</h2>
+      <p class="replies-sub">reply log</p>
       <p class="echat-note">読み込み中…</p>
     </div>
 
@@ -107,16 +113,23 @@
       .onSnapshot((snapshot) => {
         const el = document.getElementById('clapReplies');
         if (snapshot.empty) {
-          el.innerHTML = '<h2>サイト主からのお返事</h2><p class="echat-note">まだお返事はありません。</p>';
+          el.innerHTML = '<h2>サイト主からのお返事</h2><p class="replies-sub">reply log</p><p class="echat-note">まだお返事はありません。</p>';
           return;
         }
-        let html = '<h2>サイト主からのお返事</h2>';
+        let html = '<h2>サイト主からのお返事</h2><p class="replies-sub">reply log</p>';
+        let currentMonth = '';
         snapshot.forEach((doc) => {
           const d = doc.data();
           let dateStr = '';
+          let monthKey = '';
           if (d.createdAt && d.createdAt.toDate) {
             const dt = d.createdAt.toDate();
+            monthKey = dt.getFullYear() + '年' + (dt.getMonth() + 1) + '月';
             dateStr = dt.getFullYear() + '.' + String(dt.getMonth()+1).padStart(2,'0') + '.' + String(dt.getDate()).padStart(2,'0');
+          }
+          if (monthKey !== currentMonth) {
+            html += '<p class="reply-month">' + monthKey + '</p>';
+            currentMonth = monthKey;
           }
           html += '<div class="reply-entry"><span class="reply-date">' + dateStr + '</span>' + escapeHtml(d.reply) + '</div>';
         });
