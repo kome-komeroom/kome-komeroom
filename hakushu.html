@@ -131,7 +131,8 @@
             html += '<p class="reply-month">' + monthKey + '</p>';
             currentMonth = monthKey;
           }
-          html += '<div class="reply-entry"><span class="reply-date">' + dateStr + '</span>' + escapeHtml(d.reply) + '</div>';
+          const quoteHtml = d.quote ? '<div class="reply-quote">「' + escapeHtml(d.quote) + '」という声をくれた方へ</div>' : '';
+          html += '<div class="reply-entry"><span class="reply-date">' + dateStr + '</span>' + quoteHtml + escapeHtml(d.reply) + '</div>';
         });
         el.innerHTML = html;
       }, (err) => console.error(err));

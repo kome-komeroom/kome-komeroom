@@ -116,6 +116,8 @@
   </script>
   <!-- ▲▲▲ ここまで ▲▲▲ -->
 
+  <script src="reactions.js"></script>
+
   <script>
     const canvas = document.getElementById('echat-canvas');
     const ctx = canvas.getContext('2d');
@@ -304,6 +306,7 @@
           image: dataUrl,
           name: name.slice(0, 12),
           comment: comment.slice(0, 40),
+          reactions: {},
           createdAt: firebase.firestore.FieldValue.serverTimestamp()
         });
         postStatus.textContent = '投稿しました！';
@@ -394,6 +397,15 @@
         }
         card.appendChild(img);
         card.appendChild(meta);
+
+        const reactBar = buildReactionBar(d.reactions, (emoji) => {
+          const key = 'reactions.' + emoji;
+          db.collection('bbs_posts').doc(d._id).update({
+            [key]: firebase.firestore.FieldValue.increment(1)
+          }).catch((err) => console.error(err));
+        });
+        card.appendChild(reactBar);
+
         gallery.appendChild(card);
       });
 
@@ -415,7 +427,7 @@
       .orderBy('createdAt', 'desc')
       .limit(300)
       .onSnapshot((snapshot) => {
-        bbsAllDocs = snapshot.docs.map(doc => doc.data());
+        bbsAllDocs = snapshot.docs.map(doc => Object.assign({ _id: doc.id }, doc.data()));
         renderBbsPage();
       }, (err) => {
         console.error(err);

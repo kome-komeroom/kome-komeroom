@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>Web拍手メッセージ | 管理者用 | よねまるの部屋</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="frame room-page">
+
+    <header class="site-header">
+      <span class="eng">admin</span>
+      <h1>Web拍手メッセージ</h1>
+      <div class="divider"></div>
+    </header>
+
+    <div class="room-body">
+
+      <div id="authArea">
+        <div class="auth-box">
+          <p class="gate-label" style="margin-bottom:14px;">ログイン</p>
+          <div class="row">
+            <input type="email" id="authEmail" placeholder="メールアドレス" autocomplete="off">
+            <input type="password" id="authPass" placeholder="パスワード" autocomplete="off">
+          </div>
+          <button class="echat-btn primary" id="authLoginBtn">ログイン</button>
+          <span class="echat-note" id="authStatus"></span>
+        </div>
+      </div>
+
+      <div id="gated-content" class="gated-content content" style="display:none;">
+        <div id="inboxList"><p class="echat-note">読み込み中…</p></div>
+      </div>
+
+    </div>
+
+    <div class="back-wrap">
+      <a class="back-link" href="admin.html">← 管理者用トップへ戻る</a>
+    </div>
+
+    <footer class="site-footer">
+      <span class="mark">yonemaru's room</span>
+    </footer>
+
+  </div>
+
+  <!-- ▼▼▼ Firebase(他ページと同じ設定値) ▼▼▼ -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyB4J-diiATTbRl6RF0yATq4VwCofkET1g4",
+      authDomain: "yonemaru-room.firebaseapp.com",
+      projectId: "yonemaru-room",
+      storageBucket: "yonemaru-room.firebasestorage.app",
+      messagingSenderId: "719471435345",
+      appId: "1:719471435345:web:e6c5a8bd93f236b8efa270"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+    const auth = firebase.auth();
+  </script>
+  <!-- ▲▲▲ ここまで ▲▲▲ -->
+
+  <script>
+    document.getElementById('authLoginBtn').addEventListener('click', () => {
+      const email = document.getElementById('authEmail').value.trim();
+      const pass = document.getElementById('authPass').value;
+      const status = document.getElementById('authStatus');
+      status.textContent = 'ログインしています…';
+      auth.signInWithEmailAndPassword(email, pass)
+        .catch((err) => {
+          console.error(err);
+          status.textContent = 'ログインできませんでした。メールアドレスとパスワードをご確認ください。';
+        });
+    });
+
+    auth.onAuthStateChanged((user) => {
+      const authArea = document.getElementById('authArea');
+      const gatedContent = document.getElementById('gated-content');
+      if (user) {
+        authArea.style.display = 'none';
+        gatedContent.style.display = 'block';
+        const userEl = document.getElementById('inboxUser');
+        if (userEl) userEl.textContent = 'ログイン中：' + user.email;
+        if (typeof onLoggedIn === 'function') onLoggedIn();
+      } else {
+        authArea.style.display = 'block';
+        gatedContent.style.display = 'none';
+      }
+    });
+  </script>
+
+  <script>
+    let inboxWatching = false;
+    function onLoggedIn() {
+      if (inboxWatching) return;
+      inboxWatching = true;
+      db.collection('clap_messages')
+        .orderBy('createdAt', 'desc')
+        .limit(100)
+        .onSnapshot((snapshot) => {
+          const listEl = document.getElementById('inboxList');
+          if (snapshot.empty) {
+            listEl.innerHTML = '<p class="echat-note">まだメッセージはありません。</p>';
+            return;
+          }
+          listEl.innerHTML = '';
+          snapshot.forEach((doc) => {
+            const d = doc.data();
+            const id = doc.id;
+            const item = document.createElement('div');
+            item.className = 'inbox-item';
+
+            let dateStr = '';
+            if (d.createdAt && d.createdAt.toDate) {
+              const dt = d.createdAt.toDate();
+              dateStr = dt.getFullYear() + '.' + String(dt.getMonth()+1).padStart(2,'0') + '.' + String(dt.getDate()).padStart(2,'0') + ' ' + String(dt.getHours()).padStart(2,'0') + ':' + String(dt.getMinutes()).padStart(2,'0');
+            }
+
+            const dateEl = document.createElement('div');
+            dateEl.className = 'inbox-date';
+            dateEl.textContent = dateStr;
+            if (d.replied) {
+              const tag = document.createElement('span');
+              tag.className = 'replied-tag';
+              tag.textContent = '返信済み';
+              dateEl.appendChild(tag);
+            }
+            item.appendChild(dateEl);
+
+            const msgEl = document.createElement('div');
+            msgEl.className = 'inbox-message';
+            msgEl.textContent = d.message;
+            item.appendChild(msgEl);
+
+            const ta = document.createElement('textarea');
+            ta.placeholder = '返信を書く(冒頭の引用は自動で付きます。送るとWeb拍手ページに公開されます)';
+            item.appendChild(ta);
+
+            const btnRow = document.createElement('div');
+            const replyBtn = document.createElement('button');
+            replyBtn.className = 'echat-btn primary';
+            replyBtn.textContent = '返信を送る';
+            replyBtn.addEventListener('click', async () => {
+              const replyText = ta.value.trim();
+              if (!replyText) return;
+              replyBtn.disabled = true;
+              try {
+                const quote = d.message.length > 24 ? d.message.slice(0, 24) + '…' : d.message;
+                await db.collection('clap_replies').add({
+                  quote: quote,
+                  reply: replyText.slice(0, 500),
+                  createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                await db.collection('clap_messages').doc(id).update({ replied: true });
+                ta.value = '';
+              } catch (err) {
+                console.error(err);
+                alert('送信に失敗しました');
+              } finally {
+                replyBtn.disabled = false;
+              }
+            });
+            btnRow.appendChild(replyBtn);
+            item.appendChild(btnRow);
+
+            listEl.appendChild(item);
+          });
+        }, (err) => {
+          console.error(err);
+          document.getElementById('inboxList').innerHTML = '<p class="echat-note">読み込みに失敗しました。ログイン状態をご確認ください。</p>';
+        });
+    }
+  </script>
+</body>
+</html>

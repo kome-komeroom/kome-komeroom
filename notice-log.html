@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>お知らせ一覧 | よねまるの部屋</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="frame room-page">
+
+    <header class="site-header">
+      <span class="eng">notice log</span>
+      <h1>お知らせ一覧</h1>
+      <div class="divider"></div>
+    </header>
+
+    <div class="room-body content">
+      <div class="diary-entries" id="noticeLogList">
+        <p class="echat-note">読み込み中…</p>
+      </div>
+    </div>
+
+    <div class="back-wrap">
+      <a class="back-link" href="index.html">← トップへ戻る</a>
+    </div>
+
+    <footer class="site-footer">
+      <span class="mark">yonemaru's room</span>
+    </footer>
+
+  </div>
+
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyB4J-diiATTbRl6RF0yATq4VwCofkET1g4",
+      authDomain: "yonemaru-room.firebaseapp.com",
+      projectId: "yonemaru-room",
+      storageBucket: "yonemaru-room.firebasestorage.app",
+      messagingSenderId: "719471435345",
+      appId: "1:719471435345:web:e6c5a8bd93f236b8efa270"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+  </script>
+
+  <script>
+    db.collection('notices')
+      .orderBy('createdAt', 'desc')
+      .limit(30)
+      .get()
+      .then((snapshot) => {
+        const el = document.getElementById('noticeLogList');
+        if (snapshot.empty) {
+          el.innerHTML = '<p class="echat-note">まだお知らせはありません。</p>';
+          return;
+        }
+        el.innerHTML = '';
+        snapshot.forEach((doc) => {
+          const d = doc.data();
+          let dateStr = '';
+          if (d.createdAt && d.createdAt.toDate) {
+            const dt = d.createdAt.toDate();
+            dateStr = dt.getFullYear() + '.' + String(dt.getMonth()+1).padStart(2,'0') + '.' + String(dt.getDate()).padStart(2,'0') + ' ' + String(dt.getHours()).padStart(2,'0') + ':' + String(dt.getMinutes()).padStart(2,'0');
+          }
+          const wrap = document.createElement('div');
+          wrap.className = 'diary-entry';
+          const dateEl = document.createElement('div');
+          dateEl.className = 'd-date';
+          dateEl.textContent = dateStr;
+          const bodyEl = document.createElement('div');
+          bodyEl.className = 'd-body';
+          bodyEl.textContent = d.text;
+          wrap.appendChild(dateEl);
+          wrap.appendChild(bodyEl);
+          el.appendChild(wrap);
+        });
+      })
+      .catch((err) => {
+        console.error(err);
+        document.getElementById('noticeLogList').innerHTML = '<p class="echat-note">読み込みに失敗しました。</p>';
+      });
+  </script>
+</body>
+</html>

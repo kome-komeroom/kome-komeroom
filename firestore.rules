@@ -9,21 +9,27 @@ service cloud.firestore {
                     && request.resource.data.name.size() < 20
                     && request.resource.data.comment is string
                     && request.resource.data.comment.size() < 60;
-      allow update, delete: if false;
+      allow update: if request.resource.data.diff(resource.data).affectedKeys().hasOnly(['reactions']);
+      allow delete: if false;
     }
     match /diary_posts/{postId} {
       allow read: if true;
       allow create: if request.resource.data.body is string
                     && request.resource.data.body.size() < 3000
                     && request.resource.data.title is string
-                    && request.resource.data.title.size() < 60;
-      allow update, delete: if false;
+                    && request.resource.data.title.size() < 60
+                    && (!('icon' in request.resource.data)
+                        || request.resource.data.icon is string
+                        && request.resource.data.icon.size() < 300000);
+      allow update: if request.resource.data.diff(resource.data).affectedKeys().hasOnly(['reactions']);
+      allow delete: if false;
     }
     match /notices/{noticeId} {
       allow read: if true;
       allow create: if request.resource.data.text is string
                     && request.resource.data.text.size() < 100;
-      allow update, delete: if false;
+      allow update: if false;
+      allow delete: if request.auth != null;
     }
     match /haishin_memos/{memoId} {
       allow read: if true;

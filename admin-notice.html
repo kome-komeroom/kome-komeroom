@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="noindex, nofollow">
-<title>管理者用 | よねまるの部屋</title>
+<title>新着お知らせ | 管理者用 | よねまるの部屋</title>
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -12,7 +12,7 @@
 
     <header class="site-header">
       <span class="eng">admin</span>
-      <h1>管理者用</h1>
+      <h1>新着お知らせ</h1>
       <div class="divider"></div>
     </header>
 
@@ -30,40 +30,21 @@
         </div>
       </div>
 
-      <div id="gated-content" class="gated-content" style="display:none;">
-        <p class="echat-note" id="inboxUser" style="margin-bottom:18px;"></p>
-        <ul class="room-cards">
-          <li>
-            <a class="room-card" href="admin-notice.html">
-              <div class="room-card-top">
-                <span class="num">01</span>
-                <span class="label">新着お知らせ</span>
-              </div>
-            </a>
-          </li>
-          <li>
-            <a class="room-card" href="admin-memo.html">
-              <div class="room-card-top">
-                <span class="num">02</span>
-                <span class="label">配信メモ</span>
-              </div>
-            </a>
-          </li>
-          <li>
-            <a class="room-card" href="admin-clap.html">
-              <div class="room-card-top">
-                <span class="num">03</span>
-                <span class="label">Web拍手メッセージ</span>
-              </div>
-            </a>
-          </li>
-        </ul>
+      <div id="gated-content" class="gated-content content" style="display:none;">
+        <section class="work-section" style="margin-top:0;padding-top:0;border-top:none;">
+          <p class="series-desc">トップページに小さく表示されます。</p>
+          <div class="echat-toolbar" style="margin-top:0;">
+            <input type="text" id="noticeText" maxlength="60" placeholder="例：「本の話」を追加しました" style="flex:1;min-width:180px;font-family:'Zen Kaku Gothic New',sans-serif;font-size:13px;color:var(--ink);background:var(--bg);border:1px solid var(--line);padding:8px 10px;">
+            <button class="echat-btn primary" id="noticeBtn">お知らせを出す</button>
+          </div>
+          <p class="echat-note" id="noticeStatus"></p>
+        </section>
       </div>
 
     </div>
 
     <div class="back-wrap">
-      <a class="back-link" href="index.html">← トップへ戻る</a>
+      <a class="back-link" href="admin.html">← 管理者用トップへ戻る</a>
     </div>
 
     <footer class="site-footer">
@@ -116,6 +97,36 @@
       } else {
         authArea.style.display = 'block';
         gatedContent.style.display = 'none';
+      }
+    });
+  </script>
+
+  <script>
+    document.getElementById('noticeBtn').addEventListener('click', async () => {
+      const status = document.getElementById('noticeStatus');
+      const text = document.getElementById('noticeText').value.trim();
+      if (!text) {
+        status.textContent = '内容を入れてください。';
+        return;
+      }
+      status.textContent = '投稿しています…';
+      try {
+        await db.collection('notices').add({
+          text: text.slice(0, 60),
+          createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+        document.getElementById('noticeText').value = '';
+        status.textContent = 'お知らせを出しました。';
+
+        // 直近30件だけ残して、それより古いものは削除
+        const snapshot = await db.collection('notices').orderBy('createdAt', 'desc').get();
+        const toDelete = snapshot.docs.slice(30);
+        for (const doc of toDelete) {
+          await doc.ref.delete();
+        }
+      } catch (err) {
+        console.error(err);
+        status.textContent = '失敗しました。Firebaseの設定をご確認ください。';
       }
     });
   </script>

@@ -87,11 +87,22 @@
       .then((snapshot) => {
         if (snapshot.empty) return;
         const d = snapshot.docs[0].data();
+        let dateStr = '';
+        if (d.createdAt && d.createdAt.toDate) {
+          const dt = d.createdAt.toDate();
+          dateStr = (dt.getMonth()+1) + '/' + dt.getDate();
+        }
         const el = document.getElementById('notice-line');
-        el.textContent = 'NEW：' + d.text;
+        el.innerHTML = 'NEW：' + escapeHtml(d.text) + (dateStr ? ' <span class="notice-date">(' + dateStr + ')</span>' : '') + ' <a href="notice-log.html" class="notice-log-link">過去のお知らせ</a>';
         el.style.display = 'inline-block';
       })
       .catch((err) => console.error(err));
+
+    function escapeHtml(str) {
+      const div = document.createElement('div');
+      div.textContent = str;
+      return div.innerHTML;
+    }
   </script>
 </body>
 </html>

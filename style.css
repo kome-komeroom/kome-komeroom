@@ -933,6 +933,18 @@ body {
   font-size: 11.5px;
 }
 
+.notice-date {
+  color: var(--ink-soft);
+  font-size: 10.5px;
+}
+
+.notice-log-link {
+  margin-left: 6px;
+  color: var(--ink-soft);
+  text-decoration: underline;
+  font-size: 10.5px;
+}
+
 /* ---- haishin memo ---- */
 .memo-post-form {
   border-bottom: 1px dotted var(--line);
@@ -1211,6 +1223,14 @@ body {
   margin-bottom: 4px;
 }
 
+.reply-quote {
+  font-size: 11.5px;
+  color: var(--ink-soft);
+  border-left: 2px solid var(--line);
+  padding-left: 8px;
+  margin: 2px 0 6px;
+}
+
 /* ---- admin: auth login ---- */
 .auth-box {
   background: var(--bg);
@@ -1277,6 +1297,205 @@ body {
   border: 1px solid var(--line);
   padding: 1px 7px;
   margin-left: 6px;
+}
+
+/* ---- diary icon picker ---- */
+.icon-picker {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.icon-choice {
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border: 2px solid transparent;
+  border-radius: 50%;
+  background: none;
+  cursor: pointer;
+  overflow: hidden;
+}
+
+.icon-choice img {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.icon-choice.active {
+  border-color: var(--ink);
+}
+
+.icon-upload {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg);
+  border: 2px dashed var(--line);
+  cursor: pointer;
+  color: var(--ink-soft);
+  font-size: 16px;
+}
+
+.icon-upload img {
+  object-fit: cover;
+}
+
+.icon-upload.active {
+  border-style: solid;
+  border-color: var(--ink);
+}
+
+/* ---- sns-style card (diary) ---- */
+.sns-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px 4px;
+  border-top: 1px dotted var(--line);
+}
+
+.sns-card:first-child {
+  border-top: none;
+}
+
+.sns-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  border: 2px solid var(--line);
+  object-fit: cover;
+}
+
+.sns-body-wrap {
+  flex: 1;
+  min-width: 0;
+}
+
+.sns-quote {
+  font-size: 11.5px;
+  color: var(--ink-soft);
+  border-left: 2px solid var(--line);
+  padding-left: 8px;
+  margin: 4px 0 6px;
+}
+
+.react-bar {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  margin-top: 8px;
+  flex-wrap: wrap;
+}
+
+.react-bar-right {
+  justify-content: flex-end;
+}
+
+.react-btn {
+  font-size: 13px;
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 2px 8px;
+  cursor: pointer;
+  color: var(--ink);
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.react-btn:hover {
+  background: var(--card);
+}
+
+.react-count {
+  font-size: 10.5px;
+  color: var(--ink-soft);
+  min-width: 8px;
+}
+
+.react-wrap {
+  position: relative;
+  display: inline-block;
+}
+
+.react-add-btn {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 1px dashed var(--line);
+  background: var(--bg);
+  color: var(--ink-soft);
+  font-size: 13px;
+  line-height: 1;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.react-add-btn:hover {
+  border-color: var(--ink-soft);
+  color: var(--ink);
+}
+
+.react-popup {
+  position: absolute;
+  bottom: 30px;
+  right: 0;
+  z-index: 20;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 4px;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+.react-popup-opt {
+  width: 28px;
+  height: 28px;
+  border: none;
+  background: none;
+  font-size: 16px;
+  cursor: pointer;
+  border-radius: 6px;
+}
+
+.react-popup-opt:hover {
+  background: var(--bg);
+}
+
+.reply-toggle {
+  font-size: 11px;
+  color: var(--ink-soft);
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-decoration: underline;
+  padding: 2px 4px;
+}
+
+.inline-reply-form {
+  margin-top: 8px;
+}
+
+.inline-reply-form textarea {
+  width: 100%;
+  min-height: 50px;
+  font-family: "Zen Kaku Gothic New", sans-serif;
+  font-size: 12.5px;
+  color: var(--ink);
+  background: var(--bg);
+  border: 1px solid var(--line);
+  padding: 8px;
+  margin-bottom: 6px;
+  resize: vertical;
 }
 
 /* ---- footer ---- */

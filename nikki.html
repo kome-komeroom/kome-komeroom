@@ -20,9 +20,20 @@
       <p class="diary-intro">ここで直接書けます。タイトルは空でもOK、合言葉を入れて投稿してください。</p>
 
       <div class="diary-post-form">
+        <div class="icon-picker" id="iconPicker">
+          <button type="button" class="icon-choice active" data-icon="icon-1-onigiri.png"><img src="images/icon-1-onigiri.png" alt=""></button>
+          <button type="button" class="icon-choice" data-icon="icon-2.png"><img src="images/icon-2.png" alt=""></button>
+          <button type="button" class="icon-choice" data-icon="icon-3.png"><img src="images/icon-3.png" alt=""></button>
+          <button type="button" class="icon-choice" data-icon="icon-4.png"><img src="images/icon-4.png" alt=""></button>
+          <label class="icon-choice icon-upload" id="iconUploadLabel">
+            <img id="iconUploadPreview" src="" alt="" style="display:none;">
+            <span id="iconUploadPlus">＋</span>
+            <input type="file" id="iconUploadInput" accept="image/*" style="display:none;">
+          </label>
+        </div>
         <div class="row">
           <input type="text" id="diaryTitle" name="title" maxlength="60" placeholder="タイトル(なくてもOK)">
-          <input type="password" id="diaryPass" name="pass" placeholder="合言葉" autocomplete="off">
+          <input type="text" id="diaryPass" name="pass" placeholder="合言葉" autocomplete="off">
         </div>
         <textarea id="diaryBody" maxlength="1000" placeholder="今日のこと、つぶやき……"></textarea>
         <div class="row" style="justify-content:space-between;align-items:center;">
@@ -70,9 +81,59 @@
   </script>
   <!-- ▲▲▲ ここまで ▲▲▲ -->
 
+  <script src="reactions.js"></script>
+
   <script>
     const postBtn = document.getElementById('diaryPostBtn');
     const statusEl = document.getElementById('diaryStatus');
+
+    let selectedIcon = 'icon-1-onigiri.png';
+    document.querySelectorAll('.icon-choice[data-icon]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.icon-choice').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        selectedIcon = btn.dataset.icon;
+      });
+    });
+
+    // 画像を選んで丸くトリミングし、アイコンとして使う
+    document.getElementById('iconUploadInput').addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        const img = new Image();
+        img.onload = () => {
+          const size = 160;
+          const canvas = document.createElement('canvas');
+          canvas.width = size;
+          canvas.height = size;
+          const ctx = canvas.getContext('2d');
+          ctx.save();
+          ctx.beginPath();
+          ctx.arc(size/2, size/2, size/2, 0, Math.PI*2);
+          ctx.clip();
+          const scale = Math.max(size / img.width, size / img.height);
+          const w = img.width * scale;
+          const h = img.height * scale;
+          ctx.drawImage(img, (size-w)/2, (size-h)/2, w, h);
+          ctx.restore();
+
+          const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
+          selectedIcon = dataUrl;
+
+          const preview = document.getElementById('iconUploadPreview');
+          preview.src = dataUrl;
+          preview.style.display = 'block';
+          document.getElementById('iconUploadPlus').style.display = 'none';
+
+          document.querySelectorAll('.icon-choice').forEach(b => b.classList.remove('active'));
+          document.getElementById('iconUploadLabel').classList.add('active');
+        };
+        img.src = ev.target.result;
+      };
+      reader.readAsDataURL(file);
+    });
 
     postBtn.addEventListener('click', async () => {
       const pass = document.getElementById('diaryPass').value;
@@ -95,6 +156,8 @@
         await db.collection('diary_posts').add({
           title: title.slice(0, 60),
           body: body.slice(0, 1000),
+          icon: selectedIcon,
+          reactions: {},
           createdAt: firebase.firestore.FieldValue.serverTimestamp()
         });
         document.getElementById('diaryBody').value = '';
@@ -162,6 +225,7 @@
       container.appendChild(makeBtn('›', currentPage + 1, { disabled: currentPage === totalPages }));
     }
 
+
     function renderDiaryPage() {
       const items = diarySortDesc ? diaryAllDocs : [...diaryAllDocs].reverse();
       const totalPages = Math.max(1, Math.ceil(items.length / PAGE_SIZE));
@@ -180,25 +244,92 @@
       entriesEl.innerHTML = '';
       pageItems.forEach((d) => {
         const wrap = document.createElement('div');
-        wrap.className = 'diary-entry';
+        wrap.className = 'sns-card';
+
+        const iconEl = document.createElement('img');
+        iconEl.className = 'sns-icon';
+        const iconVal = d.icon || 'icon-blank.png';
+        iconEl.src = iconVal.startsWith('data:') ? iconVal : 'images/' + iconVal;
+        iconEl.alt = '';
+        wrap.appendChild(iconEl);
+
+        const bodyWrap = document.createElement('div');
+        bodyWrap.className = 'sns-body-wrap';
 
         const dateEl = document.createElement('div');
         dateEl.className = 'd-date';
         dateEl.textContent = formatDate(d);
-        wrap.appendChild(dateEl);
+        bodyWrap.appendChild(dateEl);
 
         if (d.title) {
           const titleEl = document.createElement('div');
           titleEl.className = 'd-title';
           titleEl.textContent = d.title;
-          wrap.appendChild(titleEl);
+          bodyWrap.appendChild(titleEl);
+        }
+
+        if (d.quoteOf) {
+          const quoteEl = document.createElement('div');
+          quoteEl.className = 'sns-quote';
+          quoteEl.textContent = '＞' + d.quoteOf;
+          bodyWrap.appendChild(quoteEl);
         }
 
         const bodyEl = document.createElement('div');
         bodyEl.className = 'd-body';
         bodyEl.textContent = d.body;
-        wrap.appendChild(bodyEl);
+        bodyWrap.appendChild(bodyEl);
 
+        // リアクションバー(右寄せ・ピッカー式)
+        const reactBar = buildReactionBar(d.reactions, (emoji) => {
+          const key = 'reactions.' + emoji;
+          db.collection('diary_posts').doc(d._id).update({
+            [key]: firebase.firestore.FieldValue.increment(1)
+          }).catch((err) => console.error(err));
+        });
+        reactBar.classList.add('react-bar-right');
+
+        const replyToggle = document.createElement('button');
+        replyToggle.className = 'reply-toggle';
+        replyToggle.textContent = '返信する';
+        reactBar.appendChild(replyToggle);
+
+        bodyWrap.appendChild(reactBar);
+
+        // 引用返信フォーム(トグル表示)
+        const replyForm = document.createElement('div');
+        replyForm.className = 'inline-reply-form';
+        replyForm.style.display = 'none';
+        replyForm.innerHTML = '<textarea maxlength="300" placeholder="返信を書く"></textarea><button class="echat-btn primary">送る</button>';
+        bodyWrap.appendChild(replyForm);
+
+        replyToggle.addEventListener('click', () => {
+          replyForm.style.display = replyForm.style.display === 'none' ? 'block' : 'none';
+        });
+
+        replyForm.querySelector('button').addEventListener('click', async () => {
+          const ta = replyForm.querySelector('textarea');
+          const text = ta.value.trim();
+          if (!text) return;
+          const quote = d.body.length > 24 ? d.body.slice(0, 24) + '…' : d.body;
+          try {
+            await db.collection('diary_posts').add({
+              title: '',
+              body: text.slice(0, 300),
+              quoteOf: quote,
+              icon: 'icon-1-onigiri.png',
+              reactions: {},
+              createdAt: firebase.firestore.FieldValue.serverTimestamp()
+            });
+            ta.value = '';
+            replyForm.style.display = 'none';
+          } catch (err) {
+            console.error(err);
+            alert('送信に失敗しました');
+          }
+        });
+
+        wrap.appendChild(bodyWrap);
         entriesEl.appendChild(wrap);
       });
 
@@ -220,7 +351,7 @@
       .orderBy('createdAt', 'desc')
       .limit(300)
       .onSnapshot((snapshot) => {
-        diaryAllDocs = snapshot.docs.map(doc => doc.data());
+        diaryAllDocs = snapshot.docs.map(doc => Object.assign({ _id: doc.id }, doc.data()));
         renderDiaryPage();
       }, (err) => {
         console.error(err);
