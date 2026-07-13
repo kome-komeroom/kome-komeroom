@@ -596,7 +596,6 @@ body {
 .bbs-card {
   border: 1px solid var(--line);
   background: var(--bg);
-  overflow: hidden;
 }
 
 .bbs-card img {
