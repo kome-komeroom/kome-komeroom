@@ -113,33 +113,35 @@
             const d = doc.data();
             const id = doc.id;
             const item = document.createElement('div');
-            item.className = 'inbox-item';
+            item.className = 'inbox-row';
 
             let dateStr = '';
             if (d.createdAt && d.createdAt.toDate) {
               const dt = d.createdAt.toDate();
-              dateStr = dt.getFullYear() + '.' + String(dt.getMonth()+1).padStart(2,'0') + '.' + String(dt.getDate()).padStart(2,'0') + ' ' + String(dt.getHours()).padStart(2,'0') + ':' + String(dt.getMinutes()).padStart(2,'0');
+              dateStr = dt.getFullYear() + '.' + String(dt.getMonth()+1).padStart(2,'0') + '.' + String(dt.getDate()).padStart(2,'0');
             }
 
-            const dateEl = document.createElement('div');
-            dateEl.className = 'inbox-date';
-            dateEl.textContent = dateStr;
-            if (d.replied) {
-              const tag = document.createElement('span');
-              tag.className = 'replied-tag';
-              tag.textContent = '返信済み';
-              dateEl.appendChild(tag);
-            }
-            item.appendChild(dateEl);
+            const summary = document.createElement('button');
+            summary.className = 'inbox-summary';
+            summary.innerHTML =
+              '<span class="inbox-date">' + dateStr + '</span>' +
+              '<span class="inbox-msg-preview"></span>' +
+              (d.replied ? '<span class="replied-tag">返信済み</span>' : '');
+            summary.querySelector('.inbox-msg-preview').textContent = d.message;
+            item.appendChild(summary);
+
+            const detail = document.createElement('div');
+            detail.className = 'inbox-detail';
+            detail.style.display = 'none';
 
             const msgEl = document.createElement('div');
             msgEl.className = 'inbox-message';
             msgEl.textContent = d.message;
-            item.appendChild(msgEl);
+            detail.appendChild(msgEl);
 
             const ta = document.createElement('textarea');
             ta.placeholder = '返信を書く(冒頭の引用は自動で付きます。送るとWeb拍手ページに公開されます)';
-            item.appendChild(ta);
+            detail.appendChild(ta);
 
             const btnRow = document.createElement('div');
             const replyBtn = document.createElement('button');
@@ -166,7 +168,14 @@
               }
             });
             btnRow.appendChild(replyBtn);
-            item.appendChild(btnRow);
+            detail.appendChild(btnRow);
+            item.appendChild(detail);
+
+            summary.addEventListener('click', () => {
+              const isOpen = detail.style.display !== 'none';
+              document.querySelectorAll('.inbox-detail').forEach((el) => { el.style.display = 'none'; });
+              detail.style.display = isOpen ? 'none' : 'block';
+            });
 
             listEl.appendChild(item);
           });

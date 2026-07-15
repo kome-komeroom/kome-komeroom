@@ -1074,6 +1074,14 @@ body {
   margin: 0 0 24px;
 }
 
+.clap-action-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 22px;
+  flex-wrap: wrap;
+}
+
 .clap-badge {
   display: inline-flex;
   flex-direction: column;
@@ -1083,7 +1091,7 @@ body {
   height: 92px;
   border-radius: 50%;
   border: 2px solid var(--ink-soft);
-  margin: 0 auto 22px;
+  margin: 0;
   background: var(--bg);
 }
 
@@ -1256,28 +1264,63 @@ body {
   min-width: 160px;
 }
 
-.inbox-item {
-  background: var(--bg);
-  border: 1px solid var(--line);
-  padding: 14px 16px;
-  margin-bottom: 12px;
+.inbox-row {
+  border-bottom: 1px dotted var(--line);
 }
 
-.inbox-item .inbox-date {
+.inbox-row:first-child {
+  border-top: 1px dotted var(--line);
+}
+
+.inbox-summary {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 4px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+}
+
+.inbox-summary:hover {
+  background: var(--bg);
+}
+
+.inbox-summary .inbox-date {
   font-family: "Cormorant Garamond", serif;
   font-style: italic;
   font-size: 11px;
   color: var(--ink-soft);
+  flex-shrink: 0;
 }
 
-.inbox-item .inbox-message {
+.inbox-summary .inbox-msg-preview {
+  flex: 1;
+  min-width: 0;
+  font-size: 13px;
+  color: var(--ink);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.inbox-detail {
+  padding: 4px 4px 16px;
+}
+
+.inbox-detail .inbox-message {
   font-size: 13.5px;
   line-height: 1.8;
-  margin: 6px 0 10px;
+  margin: 0 0 10px;
   white-space: pre-wrap;
+  background: var(--bg);
+  border: 1px solid var(--line);
+  padding: 10px 12px;
 }
 
-.inbox-item textarea {
+.inbox-detail textarea {
   width: 100%;
   min-height: 50px;
   font-family: "Zen Kaku Gothic New", sans-serif;
@@ -1296,6 +1339,7 @@ body {
   border: 1px solid var(--line);
   padding: 1px 7px;
   margin-left: 6px;
+  flex-shrink: 0;
 }
 
 /* ---- diary icon picker ---- */
@@ -1310,7 +1354,7 @@ body {
   height: 40px;
   padding: 0;
   border: 2px solid transparent;
-  border-radius: 50%;
+  border-radius: 8px;
   background: none;
   cursor: pointer;
   overflow: hidden;
@@ -1362,7 +1406,7 @@ body {
 .sns-icon {
   width: 56px;
   height: 56px;
-  border-radius: 50%;
+  border-radius: 10px;
   flex-shrink: 0;
   border: 2px solid var(--line);
   object-fit: cover;
@@ -1373,10 +1417,37 @@ body {
   min-width: 0;
 }
 
+.sns-body-wrap .d-date {
+  font-family: "Cormorant Garamond", serif;
+  font-style: italic;
+  font-size: 11px;
+  color: var(--ink-soft);
+}
+
+.sns-body-wrap .d-title {
+  font-family: "Shippori Mincho", serif;
+  font-size: 15.5px;
+  font-weight: 700;
+  color: var(--ink);
+  margin: 5px 0 6px;
+  padding-bottom: 5px;
+  border-bottom: 1px dotted var(--line);
+}
+
+.sns-body-wrap .d-body {
+  font-family: "Zen Kaku Gothic New", sans-serif;
+  font-size: 13.5px;
+  font-weight: 400;
+  color: var(--ink);
+  line-height: 1.9;
+  white-space: pre-wrap;
+}
+
 .sns-quote {
   font-size: 11.5px;
+  font-weight: bold;
   color: var(--ink-soft);
-  border-left: 2px solid var(--line);
+  border-left: 2px solid var(--ink-soft);
   padding-left: 8px;
   margin: 4px 0 6px;
 }

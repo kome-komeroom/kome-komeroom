@@ -16,7 +16,7 @@
       <div class="divider"></div>
     </header>
 
-    <div class="room-body">
+    <div class="room-body content">
       <p class="diary-intro">ここで直接書けます。タイトルは空でもOK、合言葉を入れて投稿してください。</p>
 
       <div class="diary-post-form">
@@ -109,15 +109,10 @@
           canvas.width = size;
           canvas.height = size;
           const ctx = canvas.getContext('2d');
-          ctx.save();
-          ctx.beginPath();
-          ctx.arc(size/2, size/2, size/2, 0, Math.PI*2);
-          ctx.clip();
           const scale = Math.max(size / img.width, size / img.height);
           const w = img.width * scale;
           const h = img.height * scale;
           ctx.drawImage(img, (size-w)/2, (size-h)/2, w, h);
-          ctx.restore();
 
           const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
           selectedIcon = dataUrl;
