@@ -1568,6 +1568,140 @@ body {
   resize: vertical;
 }
 
+/* ---- image cropper ---- */
+.cropper-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(74, 44, 22, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  padding: 20px;
+}
+
+.cropper-box {
+  background: var(--card);
+  border: 1px solid var(--line);
+  padding: 20px;
+  max-width: 320px;
+  width: 100%;
+  text-align: center;
+}
+
+.cropper-title {
+  font-family: "Shippori Mincho", serif;
+  font-size: 13px;
+  color: var(--ink);
+  margin: 0 0 12px;
+}
+
+.cropper-viewport {
+  position: relative;
+  overflow: hidden;
+  margin: 0 auto 14px;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  cursor: grab;
+  touch-action: none;
+}
+
+.cropper-img {
+  position: absolute;
+  user-select: none;
+  -webkit-user-drag: none;
+  pointer-events: none;
+}
+
+.cropper-zoom-row {
+  margin-bottom: 14px;
+}
+
+.cropper-zoom-row input[type="range"] {
+  width: 100%;
+  accent-color: var(--ink);
+}
+
+.cropper-btn-row {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+}
+
+.sns-icon-wrap {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.sns-icon-edit-btn {
+  position: absolute;
+  bottom: -4px;
+  right: -4px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 1px solid var(--line);
+  background: var(--card);
+  color: var(--ink-soft);
+  font-size: 10px;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.sns-icon-edit-btn:hover {
+  color: var(--ink);
+  border-color: var(--ink-soft);
+}
+
+.icon-edit-popup {
+  position: absolute;
+  top: 64px;
+  left: 0;
+  z-index: 30;
+  width: 220px;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.icon-edit-choices {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 10px;
+  flex-wrap: wrap;
+}
+
+.icon-edit-popup .icon-choice {
+  width: 32px;
+  height: 32px;
+}
+
+.icon-edit-popup .icon-upload span {
+  font-size: 14px;
+}
+
+.icon-edit-popup input[type="text"] {
+  width: 100%;
+  font-family: "Zen Kaku Gothic New", sans-serif;
+  font-size: 12px;
+  color: var(--ink);
+  background: var(--bg);
+  border: 1px solid var(--line);
+  padding: 6px 8px;
+  margin-bottom: 8px;
+  box-sizing: border-box;
+}
+
+.icon-edit-popup .icon-edit-confirm {
+  width: 100%;
+}
+
 /* ---- footer ---- */
 .site-footer {
   text-align: center;

@@ -82,6 +82,7 @@
   <!-- ▲▲▲ ここまで ▲▲▲ -->
 
   <script src="reactions.js"></script>
+  <script src="cropper.js"></script>
 
   <script>
     const postBtn = document.getElementById('diaryPostBtn');
@@ -96,38 +97,22 @@
       });
     });
 
-    // 画像を選んで丸くトリミングし、アイコンとして使う
+    // 画像を選んで、自分で範囲を決めてトリミングし、アイコンとして使う
     document.getElementById('iconUploadInput').addEventListener('change', (e) => {
       const file = e.target.files[0];
       if (!file) return;
-      const reader = new FileReader();
-      reader.onload = (ev) => {
-        const img = new Image();
-        img.onload = () => {
-          const size = 160;
-          const canvas = document.createElement('canvas');
-          canvas.width = size;
-          canvas.height = size;
-          const ctx = canvas.getContext('2d');
-          const scale = Math.max(size / img.width, size / img.height);
-          const w = img.width * scale;
-          const h = img.height * scale;
-          ctx.drawImage(img, (size-w)/2, (size-h)/2, w, h);
+      openCropper(file, (dataUrl) => {
+        selectedIcon = dataUrl;
 
-          const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
-          selectedIcon = dataUrl;
+        const preview = document.getElementById('iconUploadPreview');
+        preview.src = dataUrl;
+        preview.style.display = 'block';
+        document.getElementById('iconUploadPlus').style.display = 'none';
 
-          const preview = document.getElementById('iconUploadPreview');
-          preview.src = dataUrl;
-          preview.style.display = 'block';
-          document.getElementById('iconUploadPlus').style.display = 'none';
-
-          document.querySelectorAll('.icon-choice').forEach(b => b.classList.remove('active'));
-          document.getElementById('iconUploadLabel').classList.add('active');
-        };
-        img.src = ev.target.result;
-      };
-      reader.readAsDataURL(file);
+        document.querySelectorAll('.icon-choice').forEach(b => b.classList.remove('active'));
+        document.getElementById('iconUploadLabel').classList.add('active');
+      });
+      e.target.value = '';
     });
 
     postBtn.addEventListener('click', async () => {
@@ -241,12 +226,82 @@
         const wrap = document.createElement('div');
         wrap.className = 'sns-card';
 
+        const iconWrap = document.createElement('div');
+        iconWrap.className = 'sns-icon-wrap';
+
         const iconEl = document.createElement('img');
         iconEl.className = 'sns-icon';
         const iconVal = d.icon || 'icon-blank.png';
         iconEl.src = iconVal.startsWith('data:') ? iconVal : 'images/' + iconVal;
         iconEl.alt = '';
-        wrap.appendChild(iconEl);
+        iconWrap.appendChild(iconEl);
+
+        const iconEditBtn = document.createElement('button');
+        iconEditBtn.className = 'sns-icon-edit-btn';
+        iconEditBtn.textContent = '✎';
+        iconWrap.appendChild(iconEditBtn);
+
+        const iconEditPopup = document.createElement('div');
+        iconEditPopup.className = 'icon-edit-popup';
+        iconEditPopup.style.display = 'none';
+        iconEditPopup.innerHTML =
+          '<div class="icon-edit-choices">' +
+          ['icon-1-onigiri.png','icon-2.png','icon-3.png','icon-4.png'].map(f =>
+            '<button type="button" class="icon-choice" data-icon="' + f + '"><img src="images/' + f + '" alt=""></button>'
+          ).join('') +
+          '<label class="icon-choice icon-upload"><span>＋</span><input type="file" accept="image/*" style="display:none;"></label>' +
+          '</div>' +
+          '<input type="text" class="icon-edit-pass" placeholder="合言葉">' +
+          '<button class="echat-btn primary icon-edit-confirm">この見た目に変える</button>' +
+          '<p class="echat-note icon-edit-status"></p>';
+        iconWrap.appendChild(iconEditPopup);
+
+        let pendingIcon = null;
+        iconEditPopup.querySelectorAll('.icon-choice[data-icon]').forEach((btn) => {
+          btn.addEventListener('click', () => {
+            iconEditPopup.querySelectorAll('.icon-choice').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            pendingIcon = btn.dataset.icon;
+          });
+        });
+        iconEditPopup.querySelector('.icon-upload input').addEventListener('change', (e) => {
+          const file = e.target.files[0];
+          if (!file) return;
+          openCropper(file, (dataUrl) => {
+            pendingIcon = dataUrl;
+            iconEditPopup.querySelectorAll('.icon-choice').forEach(b => b.classList.remove('active'));
+            iconEditPopup.querySelector('.icon-upload').classList.add('active');
+          });
+        });
+
+        iconEditBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          document.querySelectorAll('.icon-edit-popup').forEach((p) => { if (p !== iconEditPopup) p.style.display = 'none'; });
+          iconEditPopup.style.display = iconEditPopup.style.display === 'none' ? 'block' : 'none';
+        });
+
+        iconEditPopup.querySelector('.icon-edit-confirm').addEventListener('click', async () => {
+          const statusEl = iconEditPopup.querySelector('.icon-edit-status');
+          const passVal = iconEditPopup.querySelector('.icon-edit-pass').value;
+          if (passVal !== DIARY_PASSWORD) {
+            statusEl.textContent = '合言葉がちがいます。';
+            return;
+          }
+          if (!pendingIcon) {
+            statusEl.textContent = 'アイコンを選んでください。';
+            return;
+          }
+          statusEl.textContent = '変更しています…';
+          try {
+            await db.collection('diary_posts').doc(d._id).update({ icon: pendingIcon });
+            iconEditPopup.style.display = 'none';
+          } catch (err) {
+            console.error(err);
+            statusEl.textContent = '失敗しました。';
+          }
+        });
+
+        wrap.appendChild(iconWrap);
 
         const bodyWrap = document.createElement('div');
         bodyWrap.className = 'sns-body-wrap';
@@ -291,11 +346,17 @@
 
         bodyWrap.appendChild(reactBar);
 
-        // 引用返信フォーム(トグル表示)
+        // 引用返信フォーム(トグル表示・合言葉必須)
         const replyForm = document.createElement('div');
         replyForm.className = 'inline-reply-form';
         replyForm.style.display = 'none';
-        replyForm.innerHTML = '<textarea maxlength="300" placeholder="返信を書く"></textarea><button class="echat-btn primary">送る</button>';
+        replyForm.innerHTML =
+          '<textarea maxlength="300" placeholder="返信を書く"></textarea>' +
+          '<div class="row" style="justify-content:space-between;align-items:center;">' +
+          '<input type="text" class="reply-pass" placeholder="合言葉" style="width:110px;">' +
+          '<button class="echat-btn primary">送る</button>' +
+          '</div>' +
+          '<p class="echat-note reply-status"></p>';
         bodyWrap.appendChild(replyForm);
 
         replyToggle.addEventListener('click', () => {
@@ -304,8 +365,19 @@
 
         replyForm.querySelector('button').addEventListener('click', async () => {
           const ta = replyForm.querySelector('textarea');
+          const passEl = replyForm.querySelector('.reply-pass');
+          const statusEl = replyForm.querySelector('.reply-status');
           const text = ta.value.trim();
-          if (!text) return;
+
+          if (passEl.value !== DIARY_PASSWORD) {
+            statusEl.textContent = '合言葉がちがいます。';
+            return;
+          }
+          if (!text) {
+            statusEl.textContent = '本文を書いてください。';
+            return;
+          }
+
           const quote = d.body.length > 24 ? d.body.slice(0, 24) + '…' : d.body;
           try {
             await db.collection('diary_posts').add({
@@ -317,10 +389,12 @@
               createdAt: firebase.firestore.FieldValue.serverTimestamp()
             });
             ta.value = '';
+            passEl.value = '';
+            statusEl.textContent = '';
             replyForm.style.display = 'none';
           } catch (err) {
             console.error(err);
-            alert('送信に失敗しました');
+            statusEl.textContent = '送信に失敗しました。';
           }
         });
 
