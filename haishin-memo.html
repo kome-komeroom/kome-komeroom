@@ -122,10 +122,26 @@
         }
 
         if (m.comment) {
+          const COLLAPSE_LEN = 220;
+          const isLong = m.comment.length > COLLAPSE_LEN;
+
           const c = document.createElement('div');
           c.className = 'memo-comment';
-          c.textContent = m.comment;
+          c.textContent = isLong ? m.comment.slice(0, COLLAPSE_LEN) + '…' : m.comment;
           card.appendChild(c);
+
+          if (isLong) {
+            const toggleBtn = document.createElement('button');
+            toggleBtn.className = 'memo-comment-toggle';
+            toggleBtn.textContent = '続きを読む';
+            let expanded = false;
+            toggleBtn.addEventListener('click', () => {
+              expanded = !expanded;
+              c.textContent = expanded ? m.comment : m.comment.slice(0, COLLAPSE_LEN) + '…';
+              toggleBtn.textContent = expanded ? '閉じる' : '続きを読む';
+            });
+            card.appendChild(toggleBtn);
+          }
         }
 
         listEl.appendChild(card);

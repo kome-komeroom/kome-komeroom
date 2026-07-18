@@ -50,7 +50,8 @@
               </select>
               <input type="file" id="memoImage" accept="image/*">
             </div>
-            <textarea id="memoComment" maxlength="500" placeholder="感想メモ"></textarea>
+            <textarea id="memoComment" maxlength="1500" placeholder="感想メモ" rows="6"></textarea>
+            <p class="echat-note" id="memoCharCount" style="text-align:right;margin-top:2px;">0 / 1500</p>
             <div class="row" style="justify-content:space-between;align-items:center;">
               <span class="echat-note" id="memoStatus" style="margin:0;"></span>
               <button class="echat-btn primary" id="memoPostBtn">メモを残す</button>
@@ -143,6 +144,10 @@
       });
     }
 
+    document.getElementById('memoComment').addEventListener('input', (e) => {
+      document.getElementById('memoCharCount').textContent = e.target.value.length + ' / 1500';
+    });
+
     document.getElementById('memoPostBtn').addEventListener('click', async () => {
       const status = document.getElementById('memoStatus');
       const url = document.getElementById('memoUrl').value.trim();
@@ -170,13 +175,14 @@
           url: url,
           date: date || '',
           category: category,
-          comment: comment.slice(0, 500),
+          comment: comment.slice(0, 1500),
           image: image,
           createdAt: firebase.firestore.FieldValue.serverTimestamp()
         });
         document.getElementById('memoUrl').value = '';
         document.getElementById('memoDate').value = '';
         document.getElementById('memoComment').value = '';
+        document.getElementById('memoCharCount').textContent = '0 / 1500';
         document.getElementById('memoImage').value = '';
         status.textContent = 'メモを残しました。';
       } catch (err) {
