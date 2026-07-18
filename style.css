@@ -29,11 +29,13 @@ body {
   display: flex;
   justify-content: center;
   padding: 48px 16px 80px;
+  overflow-x: hidden;
 }
 
 .frame {
   width: 100%;
   max-width: 640px;
+  min-width: 0;
 }
 
 /* ---- header ---- */
@@ -1049,6 +1051,7 @@ body {
   font-size: 13px;
   color: var(--ink);
   word-break: break-all;
+  overflow-wrap: anywhere;
   margin-bottom: 6px;
 }
 
